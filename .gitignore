@@ -6,7 +6,6 @@ user_config.sh.backup.*
 build/
 install/
 dist/
-src/downloads/
 src/extracted/
 
 # 日志文件
