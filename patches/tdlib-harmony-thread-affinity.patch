@@ -1,0 +1,81 @@
+--- a/tdutils/td/utils/port/detail/ThreadPthread.h
++++ b/tdutils/td/utils/port/detail/ThreadPthread.h
+@@ -28,7 +28,8 @@
+ #include <sys/types.h>
+ 
+-#if TD_LINUX || TD_FREEBSD || TD_NETBSD
++/* OpenHarmony: use sched_setaffinity(pid_t)+gettid; others: pthread_setaffinity_np */
++#if (TD_LINUX || TD_FREEBSD || TD_NETBSD) || defined(TD_HARMONYOS)
+ #define TD_HAVE_THREAD_AFFINITY 1
+ #endif
+ 
+--- a/tdutils/td/utils/port/detail/ThreadPthread.cpp
++++ b/tdutils/td/utils/port/detail/ThreadPthread.cpp
+@@ -27,6 +27,10 @@
+ #if TD_FREEBSD || TD_OPENBSD || TD_NETBSD
+ #include <sys/sysctl.h>
+ #endif
++#if defined(TD_HARMONYOS)
++#include <sys/syscall.h>
++#include <unistd.h>
++#endif
+ 
+ namespace td {
+ namespace detail {
+@@ -104,6 +108,22 @@
+ 
+ #if TD_HAVE_THREAD_AFFINITY
+ Status ThreadPthread::set_affinity_mask(id thread_id, uint64 mask) {
++#if defined(TD_HARMONYOS)
++  /* OpenHarmony has sched_setaffinity(pid_t) but not pthread_setaffinity_np; only used for current thread. */
++  (void)thread_id;
++  cpu_set_t cpuset;
++  CPU_ZERO(&cpuset);
++  for (int j = 0; j < 64 && j < CPU_SETSIZE; j++) {
++    if ((mask >> j) & 1) {
++      CPU_SET(j, &cpuset);
++    }
++  }
++  pid_t tid = static_cast<pid_t>(syscall(SYS_gettid));
++  int res = sched_setaffinity(tid, sizeof(cpuset), &cpuset);
++  if (res != 0) {
++    return OS_ERROR("Failed to set thread affinity mask");
++  }
++  return Status::OK();
++#elif TD_LINUX || TD_FREEBSD
+ #if TD_FREEBSD
+   cpuset_t cpuset;
+ #else
+@@ -119,7 +139,6 @@
+   }
+ 
+   auto res = skip_eintr([&] { return pthread_setaffinity_np(thread_id, sizeof(cpuset), &cpuset); });
+   if (res) {
+     return OS_ERROR("Failed to set thread affinity mask");
+   }
+   return Status::OK();
+ #elif TD_NETBSD
+@@ -172,6 +191,22 @@
+ }
+ 
+ uint64 ThreadPthread::get_affinity_mask(id thread_id) {
++#if defined(TD_HARMONYOS)
++  (void)thread_id;
++  cpu_set_t cpuset;
++  CPU_ZERO(&cpuset);
++  pid_t tid = static_cast<pid_t>(syscall(SYS_gettid));
++  int res = sched_getaffinity(tid, sizeof(cpuset), &cpuset);
++  if (res != 0) {
++    return 0;
++  }
++  uint64 mask = 0;
++  for (int j = 0; j < 64 && j < CPU_SETSIZE; j++) {
++    if (CPU_ISSET(j, &cpuset)) {
++      mask |= static_cast<uint64>(1) << j;
++    }
++  }
++  return mask;
++#elif TD_LINUX || TD_FREEBSD
+ #if TD_FREEBSD
+   cpuset_t cpuset;
+ #else

@@ -1,0 +1,52 @@
+--- a/tdutils/td/utils/AsyncFileLog.cpp
++++ b/tdutils/td/utils/AsyncFileLog.cpp
+@@ -17,6 +17,8 @@ namespace td {
+ 
+ #if !TD_THREAD_UNSUPPORTED
+ 
++#if !TD_EVENTFD_UNSUPPORTED
++
+ Status AsyncFileLog::init(string path, int64 rotate_threshold, bool redirect_stderr) {
+   CHECK(path_.empty());
+   CHECK(!path.empty());
+@@ -161,7 +163,39 @@ void AsyncFileLog::do_append(int log_level, CSlice slice) {
+   }
+ }
+ 
++#else  /* TD_EVENTFD_UNSUPPORTED: no MpscPollableQueue with eventfd, provide stubs */
++
++Status AsyncFileLog::init(string path, int64 rotate_threshold, bool redirect_stderr) {
++  (void)path;
++  (void)rotate_threshold;
++  (void)redirect_stderr;
++  return Status::Error("Async file log is not supported on this platform (no eventfd)");
++}
++
++AsyncFileLog::~AsyncFileLog() = default;
++
++vector<string> AsyncFileLog::get_file_paths() {
++  if (!path_.empty()) {
++    return {path_, PSTRING() << path_ << ".old"};
++  }
++  return {};
++}
++
++void AsyncFileLog::after_rotation() {
++  if (queue_ != nullptr) {
++    process_fatal_error("AsyncFileLog after_rotation called but async log is not supported");
++  }
++}
++
++void AsyncFileLog::do_append(int log_level, CSlice slice) {
++  (void)log_level;
++  (void)slice;
++  if (queue_ != nullptr) {
++    process_fatal_error("AsyncFileLog do_append called but async log is not supported");
++  }
++}
++
++#endif  /* TD_EVENTFD_UNSUPPORTED */
++
+ #endif
+ 
+ }  // namespace td

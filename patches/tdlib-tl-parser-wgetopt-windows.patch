@@ -1,0 +1,12 @@
+--- a/td/generate/tl-parser/wgetopt.h
++++ b/td/generate/tl-parser/wgetopt.h
+@@ -168,7 +168,8 @@ extern int __posix_getopt (int ___argc, char *const *___argv,
+ #  endif
+ # endif
+ #else /* not __GNU_LIBRARY__ */
+-extern int getopt ();
++/* Use proper prototype for MinGW/MSYS2 to avoid "expected 0, have 3" errors.  */
++extern int getopt (int ___argc, char *const *___argv, const char *__shortopts);
+ #endif /* __GNU_LIBRARY__ */
+ 
+ #ifndef __need_getopt

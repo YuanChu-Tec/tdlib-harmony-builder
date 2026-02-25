@@ -1,0 +1,40 @@
+--- a/td/generate/tl-parser/wgetopt.c
++++ b/td/generate/tl-parser/wgetopt.c
+@@ -68,6 +68,10 @@ to get __GNU_LIBRARY__ defined.  */
+ # include <unistd.h>
+ #endif	/* GNU C library.  */
+ 
++#if !defined(__GNU_LIBRARY__)
++# include <stdlib.h>
++#endif
++
+ #ifdef VMS
+ # include <unixlib.h>
+ # if HAVE_STRING_H - 0
+@@ -212,11 +216,6 @@ in GCC.  */
+ #  include <string.h>
+ # else
+ #  include <strings.h>
+ # endif
+-
+-/* Avoid depending on library functions or files
+-whose names are inconsistent.  */
+-
+-#ifndef getenv
+-extern char *getenv();
+-#endif
+ 
+ static char *
+ my_index(str, chr)
+@@ -396,7 +395,13 @@ const char *optstring;
+ 
+ 	nextchar = NULL;
+ 
++#if defined(_WIN32) || defined(__MINGW32__) || defined(__MSYS__) || defined(WIN32)
++	posixly_correct = NULL;
++#else
+ 	posixly_correct = getenv("POSIXLY_CORRECT");
++#endif
+ 
+ 	/* Determine how to handle the ordering of options and nonoptions.  */
+ 

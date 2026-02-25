@@ -1,0 +1,36 @@
+--- a/tdutils/td/utils/port/EventFd.h
++++ b/tdutils/td/utils/port/EventFd.h
+@@ -11,11 +11,13 @@
+ // include all and let config.h decide
+ #include "td/utils/port/detail/EventFdBsd.h"
+ #include "td/utils/port/detail/EventFdLinux.h"
++#include "td/utils/port/detail/EventFdPipe.h"
+ #include "td/utils/port/detail/EventFdWindows.h"
+ 
+ namespace td {
+ 
+ // clang-format off
+ 
+-#if TD_EVENTFD_LINUX
+-  using EventFd = detail::EventFdLinux;
++#if defined(TD_EVENTFD_PIPE)
++  using EventFd = detail::EventFdPipe;
++#elif TD_EVENTFD_LINUX
++  using EventFd = detail::EventFdLinux;
+ #elif TD_EVENTFD_BSD
+--- a/tdutils/CMakeLists.txt
++++ b/tdutils/CMakeLists.txt
+@@ -77,6 +77,7 @@ set(TDUTILS_SOURCE
+   td/utils/port/detail/EventFdBsd.cpp
+   td/utils/port/detail/EventFdLinux.cpp
+   td/utils/port/detail/EventFdPipe.cpp
+   td/utils/port/detail/EventFdWindows.cpp
+   td/utils/port/detail/Iocp.cpp
+--- a/tdutils/CMakeLists.txt
++++ b/tdutils/CMakeLists.txt
+@@ -166,6 +167,7 @@ set(TDUTILS_HEADERS
+   td/utils/port/detail/EventFdBsd.h
+   td/utils/port/detail/EventFdLinux.h
+   td/utils/port/detail/EventFdPipe.h
+   td/utils/port/detail/EventFdWindows.h
+   td/utils/port/detail/Iocp.h

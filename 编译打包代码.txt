@@ -1,0 +1,11 @@
+# 编译 arm64-v8a
+./scripts/build_all.sh --arch arm64-v8a
+
+# 编译 armeabi-v7a
+./scripts/build_all.sh --arch armeabi-v7a
+
+# 编译 x86_64
+./scripts/build_all.sh --arch x86_64
+
+# 打包
+./scripts/package_dist.sh
