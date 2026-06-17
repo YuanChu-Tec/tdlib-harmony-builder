@@ -160,11 +160,14 @@ tdlib-harmony-builder/
 │       └── ensure_manual_api_placeholders.sh  # 占位符脚本
 │
 ├── src/                         # 源码目录
-│   ├── downloads/              # 下载的源码包
-│   └── extracted/              # 解压后的源码
-│       ├── td-1.8.0/           # TDLib 源码
-│       ├── openssl-3.6.0/      # OpenSSL 源码
-│       ├── zlib-1.3.1/         # zlib 源码
+│   ├── downloads/              # 下载的源码包（手动放置）
+│   │   ├── openssl.tar.gz
+│   │   ├── zlib.tar.gz
+│   │   └── ...
+│   └── extracted/              # 解压后的源码（自动解压，固定名称）
+│       ├── td/                 # TDLib 源码
+│       ├── openssl/            # OpenSSL 源码
+│       ├── zlib/               # zlib 源码
 │       └── ...                 # 其他依赖库
 │
 ├── build/                       # 构建目录
@@ -208,87 +211,107 @@ tdlib-harmony-builder/
 
 ## 🚀 完整编译流程
 
+### 前置准备
+
+**手动下载源码**：本项目已移除自动下载功能，请自行下载所有依赖库的源码压缩包，并重命名为**固定名称**（不带版本号）。
+
+**文件名要求**：
+```
+openssl.tar.gz
+zlib.tar.gz
+sqlite.tar.gz
+icu.tar.gz
+protobuf.tar.gz
+libphonenumber.tar.gz
+crc32c.tar.gz
+xxhash.tar.gz
+abseil.tar.gz
+re2.tar.gz
+libevent.tar.gz
+lz4.tar.gz
+snappy.tar.gz
+double-conversion.tar.gz
+tdlib.tar.gz
+```
+
+**操作步骤**：
+1. 从各库官方网站下载源码压缩包
+2. 重命名为上述固定名称（不带版本号）
+3. 将所有压缩包放到 `src/downloads/` 目录
+
 ### 方式 1: 一键完整构建（推荐）
 
 ```bash
-# 完整流程：下载 → 解压 → 补丁 → 编译 → 验证 → 打包
+# 完整流程：解压 → 补丁 → 编译 → 验证 → 打包
 ./builder.sh --full
 ```
 
 **执行内容**：
-1. 下载所有依赖库源码
-2. 解压源码包
-3. 应用 HarmonyOS 适配补丁
-4. 编译所有依赖库（按依赖顺序）
-5. 验证编译结果
-6. 打包发布
+1. 解压所有源码包（自动重命名为固定名称）
+2. 应用 HarmonyOS 适配补丁
+3. 编译所有依赖库（按依赖顺序）
+4. 验证编译结果
+5. 打包发布
 
 ### 方式 2: 分步执行（更多控制）
 
 ```bash
-# 步骤 1: 下载源码
-./scripts/download_sources.sh
-
-# 步骤 2: 解压源码
+# 步骤 1: 解压源码（自动重命名为固定名称）
 ./scripts/extract_sources.sh
 
-# 步骤 3: 应用补丁
+# 步骤 2: 应用补丁
 ./scripts/apply_patches.sh
 
-# 步骤 4: 编译所有库（指定架构）
+# 步骤 3: 编译所有库（指定架构）
 ./scripts/build_all.sh --arch arm64-v8a
 
-# 步骤 5: 验证编译结果
+# 步骤 4: 验证编译结果
 ./scripts/verify_build.sh --arch arm64-v8a
 
-# 步骤 6: 打包（可选）
+# 步骤 5: 打包（可选）
 ./scripts/package_dist.sh
 ```
 
 ### 编译流程详解
 
-#### 1. 下载源码 (`download_sources.sh`)
+#### 1. 准备源码（手动）
 
-**功能**: 下载所有依赖库的源码包
+**功能**: 手动下载并放置源码压缩包
 
-**下载位置**: `src/downloads/`
+**放置位置**: `src/downloads/`
 
-**下载的库**:
-- zlib
-- OpenSSL
-- SQLite
-- ICU
-- Protocol Buffers
-- CRC32C
-- xxHash
-- Abseil
-- RE2
-- libevent
-- LZ4
-- Snappy
-- double-conversion
-- libphonenumber
-- TDLib
+**需要的库**:
+- openssl.tar.gz
+- zlib.tar.gz
+- sqlite.tar.gz
+- icu.tar.gz
+- protobuf.tar.gz
+- crc32c.tar.gz
+- xxhash.tar.gz
+- abseil.tar.gz
+- re2.tar.gz
+- libevent.tar.gz
+- lz4.tar.gz
+- snappy.tar.gz
+- double-conversion.tar.gz
+- libphonenumber.tar.gz
+- tdlib.tar.gz
 
-**日志**: `logs/download.log`
-
-**常见错误**:
-- ❌ **网络超时**: 增加 `DOWNLOAD_TIMEOUT` 或使用镜像源
-- ❌ **下载失败**: 检查网络连接，或手动下载到 `src/downloads/`
+**支持的压缩格式**: `.tar.gz`, `.tgz`, `.tar.bz2`, `.tar.xz`, `.zip`, `.tar`
 
 #### 2. 解压源码 (`extract_sources.sh`)
 
-**功能**: 解压所有下载的源码包
+**功能**: 解压所有下载的源码包，并自动重命名为固定名称
 
 **解压位置**: `src/extracted/`
 
 **解压后的目录结构**:
 ```
 src/extracted/
-├── td-1.8.0/
-├── openssl-3.6.0/
-├── zlib-1.3.1/
-├── sqlite-autoconf-3510200/
+├── td/
+├── openssl/
+├── zlib/
+├── sqlite/
 ├── icu/
 │   └── source/
 └── ...
@@ -297,8 +320,9 @@ src/extracted/
 **日志**: `logs/extract.log`
 
 **常见错误**:
-- ❌ **解压失败**: 检查下载的文件是否完整，重新下载
+- ❌ **解压失败**: 检查下载的文件是否完整
 - ❌ **磁盘空间不足**: 清理磁盘空间
+- ❌ **文件不存在**: 确认已将压缩包放到 `src/downloads/` 目录
 
 #### 3. 应用补丁 (`apply_patches.sh`)
 
@@ -491,7 +515,7 @@ rm -rf src/extracted/*
 
 ```
 src/extracted/
-├── td-1.8.0/                    # TDLib 源码
+├── td/                          # TDLib 源码（固定名称）
 │   ├── td/                      # TDLib 核心代码
 │   │   ├── mtproto/            # MTProto 协议
 │   │   ├── telegram/           # Telegram API
@@ -505,8 +529,8 @@ src/extracted/
 │   │       │           └── td_api_json.cpp/h
 │   │       └── tl-parser/      # TL 解析器
 │   └── CMakeLists.txt
-├── openssl-3.6.0/               # OpenSSL 源码
-├── zlib-1.3.1/                  # zlib 源码
+├── openssl/                     # OpenSSL 源码（固定名称）
+├── zlib/                        # zlib 源码（固定名称）
 └── ...
 ```
 
