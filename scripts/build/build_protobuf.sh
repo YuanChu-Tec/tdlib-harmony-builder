@@ -193,29 +193,11 @@ fi
 # 注意：Protobuf 33.4+ 依赖 Abseil，需要确保 Abseil 被正确构建和安装
 # 添加 -D_POSIX_C_SOURCE 以启用 POSIX 函数（如 close）
 # 
-# 重要：HarmonyOS SDK 的 clang 15.0.4 在处理 protobuf 35.1 的某些 C++ 代码时可能崩溃
-# 因此使用 -Og 而非 -O0/-O1/-O3 来平衡编译稳定性和性能
-# -Og 生成更少的编译器内部临时值和转换，降低 clang SIGSEGV 概率
-# 注意：不要添加 -fno-exceptions 或 -fno-rtti，因为 protobuf 35.x 大量使用异常和 RTTI
-PROTOBUF_C_FLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L"
-PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -std=c++17"
-
-# 移除其它 -Ox 并替换为 -Og（使用 -Og 以避免 clang 15.0.4 的段错误）
-PROTOBUF_C_FLAGS=$(echo "$PROTOBUF_C_FLAGS" | sed 's/-O[0-9s]/-Og/g')
-PROTOBUF_CXX_FLAGS=$(echo "$PROTOBUF_CXX_FLAGS" | sed 's/-O[0-9s]/-Og/g')
-
-# 如果替换失败，手动确保 -Og 存在
-if [[ "$PROTOBUF_C_FLAGS" != *"-Og"* ]]; then
-    PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -Og"
-fi
-if [[ "$PROTOBUF_CXX_FLAGS" != *"-Og"* ]]; then
-    PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -Og"
-fi
-
-# 添加额外的标志来避免 clang 15.0.4 段错误
-# -fno-strict-aliasing: 禁用严格别名规则
-PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -fno-strict-aliasing"
-PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -fno-strict-aliasing -Wno-unused-command-line-argument"
+# 注意：不要主动覆盖优化级别，由 CMake Release 模式自动使用 -O3
+# 之前尝试 -O0/-O1/-Og 反而触发 clang 15.0.4 解析器崩溃
+# 不要添加 -fno-exceptions 或 -fno-rtti，protobuf 35.x 依赖异常和 RTTI
+PROTOBUF_C_FLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS"
+PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS -std=c++17 -Wno-unused-command-line-argument"
 
 # 自动检测 Abseil 安装路径（直接传递 -Dabsl_DIR，避免中间变量引号被 eval 吞掉）
 ABSL_CMAKE_DIR=""
@@ -283,7 +265,7 @@ fi
 # 编译（使用 cmake --build 以支持不同的生成器）
 log_step "编译 Protocol Buffers..."
 run_command \
-    "\"$CMAKE_CMD\" --build . --config Release -j4" \
+    "\"$CMAKE_CMD\" --build . --config Release -j${PARALLEL_JOBS}" \
     "${LOGS_DIR}/build/protobuf_${ARCH}_build.log" \
     "编译 Protocol Buffers"
 

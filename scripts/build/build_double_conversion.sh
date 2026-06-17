@@ -58,7 +58,7 @@ if [[ -z "$TOOLCHAIN_FILE" ]]; then
     fi
 fi
 
-# 配置 CMake（降低 CMake 版本要求，兼容 HarmonyOS SDK 自带的 CMake）
+# 配置 CMake（添加 CMake 策略版本以兼容旧版本）
 run_command \
     "\"$CMAKE_CMD\" \"$SOURCE_DIR\" \
         -DCMAKE_TOOLCHAIN_FILE=\"$TOOLCHAIN_FILE\" \
