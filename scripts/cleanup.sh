@@ -2,8 +2,10 @@
 # 清理构建文件脚本
 #
 # 用法:
-#   ./scripts/cleanup.sh           # 清理全部（含 src/downloads、src/extracted）
+#   ./scripts/cleanup.sh           # 清理全部构建产物
 #   ./scripts/cleanup.sh --keep-src   # 仅清理编译产物，保留 src 目录
+#
+# 注意: 下载目录 (src/downloads) 永远不会被清理
 
 SCRIPTS_ABS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ABS="$(cd "$SCRIPTS_ABS/.." && pwd)"
@@ -17,6 +19,7 @@ for arg in "$@"; do
     esac
 done
 
+# 下载目录永远不会被清理
 if [[ "$KEEP_SRC" == "true" ]]; then
     log_step "清理编译产物（保留 src 目录）"
     CLEAN_DIRS=(
@@ -28,16 +31,16 @@ if [[ "$KEEP_SRC" == "true" ]]; then
     echo "将清理: build/, install/, dist/, logs/"
     echo "保留: src/downloads/, src/extracted/"
 else
-    log_step "清理构建文件（含 src 下载与解压）"
+    log_step "清理构建文件（保留下载目录）"
     CLEAN_DIRS=(
         "$BUILD_DIR"
         "$INSTALL_DIR"
         "$EXTRACT_DIR"
-        "$DOWNLOAD_DIR"
         "$DIST_DIR"
         "$LOGS_DIR"
     )
-    echo "将清理: build/, install/, dist/, logs/, src/downloads/, src/extracted/"
+    echo "将清理: build/, install/, dist/, logs/, src/extracted/"
+    echo "保留: src/downloads/ (下载目录永远不会被清理)"
 fi
 
 echo ""
