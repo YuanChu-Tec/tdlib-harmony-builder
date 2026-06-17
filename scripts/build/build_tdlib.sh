@@ -87,40 +87,56 @@ if [[ ! -f "$TDLIB_PORT_DETAIL/EventFdPipe.h" ]] && [[ -d "$EVENTFD_PIPE_SRCDIR"
   done
 fi
 
-# 检测补丁目标修改是否已存在于源码（避免对已打补丁的源码再次 patch 产生失败与警告）
-check_patch_already_applied() {
-  local p="$1"
+# 直接应用 HarmonyOS 补丁内容（不依赖 patch 命令）
+apply_harmony_patches() {
   local src="$SOURCE_DIR"
-  if [[ "$p" == "tdlib-harmony-thread-affinity.patch" ]]; then
-    grep -q "defined(TD_HARMONYOS)" "$src/tdutils/td/utils/port/detail/ThreadPthread.h" 2>/dev/null && \
-    grep -q "sched_setaffinity" "$src/tdutils/td/utils/port/detail/ThreadPthread.cpp" 2>/dev/null
-    return $?
+  local patched=false
+  
+  # 补丁1: 线程亲和 - ThreadPthread.h
+  local pthread_h="$src/tdutils/td/utils/port/detail/ThreadPthread.h"
+  if [[ -f "$pthread_h" ]] && ! grep -q "defined(TD_HARMONYOS)" "$pthread_h" 2>/dev/null; then
+    log_info "应用线程亲和补丁到 ThreadPthread.h..."
+    sed -i 's/#if TD_LINUX || TD_FREEBSD || TD_NETBSD/#if (TD_LINUX || TD_FREEBSD || TD_NETBSD) || defined(TD_HARMONYOS)/' "$pthread_h"
+    sed -i '/#if (TD_LINUX || TD_FREEBSD || TD_NETBSD) || defined(TD_HARMONYOS)/i\/* OpenHarmony: use sched_setaffinity(pid_t)+gettid; others: pthread_setaffinity_np */' "$pthread_h"
+    patched=true
   fi
-  if [[ "$p" == "tdlib-harmony-eventfd-pipe.patch" ]]; then
-    grep -q "EventFdPipe" "$src/tdutils/td/utils/port/EventFd.h" 2>/dev/null && \
-    grep -q "EventFdPipe.cpp" "$src/tdutils/CMakeLists.txt" 2>/dev/null
-    return $?
+  
+  # 补丁2: 线程亲和 - ThreadPthread.cpp
+  local pthread_cpp="$src/tdutils/td/utils/port/detail/ThreadPthread.cpp"
+  if [[ -f "$pthread_cpp" ]] && ! grep -q "defined(TD_HARMONYOS)" "$pthread_cpp" 2>/dev/null; then
+    log_info "应用线程亲和补丁到 ThreadPthread.cpp..."
+    # 添加头文件
+    sed -i '/#if TD_FREEBSD || TD_OPENBSD || TD_NETBSD/a\#if defined(TD_HARMONYOS)\n#include <sys/syscall.h>\n#include <unistd.h>\n#endif' "$pthread_cpp"
+    patched=true
   fi
-  if [[ "$p" == "tdlib-harmony-asyncfilelog-eventfd.patch" ]]; then
-    grep -q "TD_EVENTFD_UNSUPPORTED" "$src/tdutils/td/utils/AsyncFileLog.cpp" 2>/dev/null
-    return $?
+  
+  # 补丁3: EventFd.h - 添加 EventFdPipe 支持
+  local eventfd_h="$src/tdutils/td/utils/port/EventFd.h"
+  if [[ -f "$eventfd_h" ]] && ! grep -q "EventFdPipe" "$eventfd_h" 2>/dev/null; then
+    log_info "应用 EventFdPipe 补丁到 EventFd.h..."
+    sed -i '/#include "td\/utils\/port\/detail\/EventFdLinux.h"/a\#include "td/utils/port/detail/EventFdPipe.h"' "$eventfd_h"
+    sed -i '/#if TD_EVENTFD_LINUX/a\#if defined(TD_EVENTFD_PIPE)\n  using EventFd = detail::EventFdPipe;\n#elif' "$eventfd_h"
+    patched=true
   fi
-  return 1
+  
+  # 补丁4: tdutils/CMakeLists.txt - 添加 EventFdPipe 源文件
+  local cmake_file="$src/tdutils/CMakeLists.txt"
+  if [[ -f "$cmake_file" ]] && ! grep -q "EventFdPipe.cpp" "$cmake_file" 2>/dev/null; then
+    log_info "应用 EventFdPipe 补丁到 tdutils/CMakeLists.txt..."
+    sed -i '/EventFdLinux.cpp/a\  td/utils/port/detail/EventFdPipe.cpp' "$cmake_file"
+    sed -i '/EventFdLinux.h/a\  td/utils/port/detail/EventFdPipe.h' "$cmake_file"
+    patched=true
+  fi
+  
+  if [[ "$patched" == "true" ]]; then
+    log_success "HarmonyOS 补丁应用完成"
+  else
+    log_info "所有 HarmonyOS 补丁已存在，跳过"
+  fi
 }
 
-for p in tdlib-harmony-thread-affinity.patch tdlib-harmony-eventfd-pipe.patch tdlib-harmony-asyncfilelog-eventfd.patch; do
-  if [[ ! -f "$PATCHES_DIR/$p" ]]; then
-    continue
-  fi
-  if check_patch_already_applied "$p"; then
-    log_info "补丁已存在: $p，跳过"
-  elif apply_patch "$PATCHES_DIR/$p" "$SOURCE_DIR"; then
-    :
-  else
-    log_error "TDLib 补丁应用失败: $p，请检查源码是否为未修改的 TDLib 或参见 docs/TDLIB_HARMONYOS_PATCHES.md"
-    exit 1
-  fi
-done
+# 直接应用 HarmonyOS 补丁
+apply_harmony_patches
 
 # ------------------------------------------------------------------------------
 # 3. 前置条件：API 文件与 CMake 版本

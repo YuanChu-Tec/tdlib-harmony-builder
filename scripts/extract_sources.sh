@@ -51,7 +51,7 @@ ARCHIVE_FILES=()
 # 使用正则表达式精确匹配文件名结尾，避免部分匹配
 for ext in "${ARCHIVE_EXTENSIONS[@]}"; do
     # 将扩展名中的点转义，用于正则表达式
-    local escaped_ext="${ext//./\.}"
+    escaped_ext="${ext//./\.}"
     while IFS= read -r file; do
         ARCHIVE_FILES+=("$file")
     done < <(find "$DOWNLOAD_DIR" -maxdepth 1 -type f -regex ".*${escaped_ext}$" 2>/dev/null)

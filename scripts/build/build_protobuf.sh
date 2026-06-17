@@ -188,7 +188,8 @@ if [[ -z "$TOOLCHAIN_FILE" ]]; then
 fi
 
 # 配置 CMake
-# 注意：Protobuf 33.4 依赖 Abseil，需要确保 Abseil 被正确构建和安装
+# 注意：Protobuf 33.4+ 依赖 Abseil，需要确保 Abseil 被正确构建和安装
+# 添加 -D_POSIX_C_SOURCE 和 -DOHOS 以支持 posix_close 等函数
 run_command \
     "\"$CMAKE_CMD\" \"$SOURCE_DIR\" \
         -DCMAKE_TOOLCHAIN_FILE=\"$TOOLCHAIN_FILE\" \
@@ -205,8 +206,8 @@ run_command \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_C_COMPILER=\"$CC\" \
         -DCMAKE_CXX_COMPILER=\"$CXX\" \
-        -DCMAKE_C_FLAGS=\"$CFLAGS\" \
-        -DCMAKE_CXX_FLAGS=\"$CXXFLAGS\" \
+        -DCMAKE_C_FLAGS=\"$CFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS\" \
+        -DCMAKE_CXX_FLAGS=\"$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS\" \
         -DCMAKE_EXE_LINKER_FLAGS=\"$LDFLAGS\"" \
     "${LOGS_DIR}/build/protobuf_${ARCH}_configure.log" \
     "配置 Protocol Buffers"

@@ -176,10 +176,7 @@ full_build() {
         return 1
     fi
     
-    # 2. 应用补丁
-    if ! apply_patches; then
-        print_warning "补丁应用可能不完整"
-    fi
+    # 补丁将在编译时自动应用（build_tdlib.sh 中处理）
     
     # 4. 编译所有架构
     local failed_archs=()
