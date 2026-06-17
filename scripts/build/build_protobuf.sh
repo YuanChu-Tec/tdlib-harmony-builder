@@ -114,31 +114,15 @@ if [[ -f "$HOST_PROTOC_BUILD_DIR/Makefile" ]]; then
         "make -j${PARALLEL_JOBS} protoc" \
         "${LOGS_DIR}/build/protobuf_${ARCH}_host_build.log" \
         "编译主机 protoc"
-    HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc"
-    if [[ ! -f "$HOST_PROTOC" ]] && [[ -f "$HOST_PROTOC_BUILD_DIR/src/protoc.exe" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc.exe"
-    fi
+    # 查找编译后的 protoc
+    HOST_PROTOC=$(find "$HOST_PROTOC_BUILD_DIR" -name protoc -type f 2>/dev/null | head -1)
 elif [[ -f "$HOST_PROTOC_BUILD_DIR/build.ninja" ]] || [[ -f "$HOST_PROTOC_BUILD_DIR/Makefile" ]]; then
     run_command \
-        "\"$HOST_CMAKE_CMD\" --build . --target protoc -j${PARALLEL_JOBS}" \
+        "\"$HOST_CMAKE_CMD\" --build . --target protoc -j${PARALLEL_JOBS}}" \
         "${LOGS_DIR}/build/protobuf_${ARCH}_host_build.log" \
         "编译主机 protoc"
-    HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/protoc"
-    if [[ ! -f "$HOST_PROTOC" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc"
-    fi
-    if [[ ! -f "$HOST_PROTOC" ]] && [[ -f "$HOST_PROTOC_BUILD_DIR/protoc.exe" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/protoc.exe"
-    fi
-    if [[ ! -f "$HOST_PROTOC" ]] && [[ -f "$HOST_PROTOC_BUILD_DIR/src/protoc.exe" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc.exe"
-    fi
-    if [[ ! -f "$HOST_PROTOC" ]] && [[ -f "$HOST_PROTOC_BUILD_DIR/install/bin/protoc" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/install/bin/protoc"
-    fi
-    if [[ ! -f "$HOST_PROTOC" ]] && [[ -f "$HOST_PROTOC_BUILD_DIR/install/bin/protoc.exe" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/install/bin/protoc.exe"
-    fi
+    # 查找编译后的 protoc
+    HOST_PROTOC=$(find "$HOST_PROTOC_BUILD_DIR" -name protoc -type f 2>/dev/null | head -1)
 else
     log_warning "无法构建主机 protoc，将尝试使用系统 protoc"
     HOST_PROTOC="protoc"
@@ -154,9 +138,8 @@ export AR="$SAVE_AR"
 export RANLIB="$SAVE_RANLIB"
 
 # 验证主机 protoc 是否存在
-if [[ ! -f "$HOST_PROTOC" ]] && ! command -v "$HOST_PROTOC" &> /dev/null; then
-    log_warning "主机 protoc 未找到: $HOST_PROTOC"
-    log_warning "将尝试使用系统 protoc（如果可用）"
+if [[ -z "$HOST_PROTOC" ]] || [[ ! -f "$HOST_PROTOC" ]]; then
+    log_warning "主机 protoc 未找到，将尝试使用系统 protoc（如果可用）"
     HOST_PROTOC="protoc"
 fi
 
@@ -206,8 +189,8 @@ run_command \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_C_COMPILER=\"$CC\" \
         -DCMAKE_CXX_COMPILER=\"$CXX\" \
-        -DCMAKE_C_FLAGS=\"$CFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS -Dposix_close=close\" \
-        -DCMAKE_CXX_FLAGS=\"$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS -Dposix_close=close\" \
+        -DCMAKE_C_FLAGS=\"$CFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS\" \
+        -DCMAKE_CXX_FLAGS=\"$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS\" \
         -DCMAKE_EXE_LINKER_FLAGS=\"$LDFLAGS\"" \
     "${LOGS_DIR}/build/protobuf_${ARCH}_configure.log" \
     "配置 Protocol Buffers"
@@ -215,6 +198,18 @@ run_command \
 if [[ $? -ne 0 ]]; then
     log_error "Protocol Buffers 配置失败"
     exit 1
+fi
+
+# 修复 HarmonyOS 兼容性问题：posix_close 函数不存在
+# 将 posix_close(fd, 0) 替换为 close(fd)
+log_step "修复 HarmonyOS 兼容性问题..."
+ZERO_COPY_STREAM_IMPL="$SOURCE_DIR/src/google/protobuf/io/zero_copy_stream_impl.cc"
+if [[ -f "$ZERO_COPY_STREAM_IMPL" ]]; then
+    log_info "修复 zero_copy_stream_impl.cc 中的 posix_close 调用"
+    sed -i 's/posix_close(fd, 0)/close(fd)/g' "$ZERO_COPY_STREAM_IMPL"
+    log_success "HarmonyOS 兼容性修复完成"
+else
+    log_warning "未找到 zero_copy_stream_impl.cc，跳过修复"
 fi
 
 # 编译（使用 cmake --build 以支持不同的生成器）
