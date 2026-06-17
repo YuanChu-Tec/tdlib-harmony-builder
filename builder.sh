@@ -26,8 +26,8 @@ NC='\033[0m' # No Color
 print_header() {
     echo -e "${BLUE}${BOLD}"
     echo "╔══════════════════════════════════════════════════════════════════╗"
-    echo "║                TDLib for HarmonyOS 构建系统                     ║"
-    echo "║                        版本 ${PROJECT_VERSION}                           ║"
+    echo "║                TDLib for HarmonyOS 构建系统                      ║"
+    echo "║                        版本 ${PROJECT_VERSION}                      ║"
     echo "╚══════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
 }

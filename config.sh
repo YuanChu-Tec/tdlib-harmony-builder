@@ -92,7 +92,7 @@ fi
 # 项目基本信息
 # ============================================
 export PROJECT_NAME="tdlib-harmonyos"
-export PROJECT_VERSION="1.8.0-harmonyos"
+export PROJECT_VERSION="1.8.65-harmonyos"
 export BUILD_DATE=$(date +%Y%m%d)
 
 # ============================================
