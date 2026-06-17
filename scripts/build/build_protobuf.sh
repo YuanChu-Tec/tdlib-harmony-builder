@@ -114,15 +114,33 @@ if [[ -f "$HOST_PROTOC_BUILD_DIR/Makefile" ]]; then
         "make -j${PARALLEL_JOBS} protoc" \
         "${LOGS_DIR}/build/protobuf_${ARCH}_host_build.log" \
         "编译主机 protoc"
-    # 查找编译后的 protoc
-    HOST_PROTOC=$(find "$HOST_PROTOC_BUILD_DIR" -name protoc -type f 2>/dev/null | head -1)
+    # 查找编译后的 protoc（包括符号链接）
+    # 先检查直接路径
+    if [[ -x "$HOST_PROTOC_BUILD_DIR/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/protoc"
+    elif [[ -x "$HOST_PROTOC_BUILD_DIR/src/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc"
+    elif [[ -x "$HOST_PROTOC_BUILD_DIR/install/bin/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/install/bin/protoc"
+    else
+        # 最后尝试 find
+        HOST_PROTOC=$(find "$HOST_PROTOC_BUILD_DIR" -name protoc \( -type f -o -type l \) 2>/dev/null | head -1)
+    fi
 elif [[ -f "$HOST_PROTOC_BUILD_DIR/build.ninja" ]] || [[ -f "$HOST_PROTOC_BUILD_DIR/Makefile" ]]; then
     run_command \
-        "\"$HOST_CMAKE_CMD\" --build . --target protoc -j${PARALLEL_JOBS}}" \
+        "\"$HOST_CMAKE_CMD\" --build . --target protoc -j${PARALLEL_JOBS}" \
         "${LOGS_DIR}/build/protobuf_${ARCH}_host_build.log" \
         "编译主机 protoc"
-    # 查找编译后的 protoc
-    HOST_PROTOC=$(find "$HOST_PROTOC_BUILD_DIR" -name protoc -type f 2>/dev/null | head -1)
+    # 查找编译后的 protoc（包括符号链接）
+    if [[ -x "$HOST_PROTOC_BUILD_DIR/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/protoc"
+    elif [[ -x "$HOST_PROTOC_BUILD_DIR/src/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc"
+    elif [[ -x "$HOST_PROTOC_BUILD_DIR/install/bin/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/install/bin/protoc"
+    else
+        HOST_PROTOC=$(find "$HOST_PROTOC_BUILD_DIR" -name protoc \( -type f -o -type l \) 2>/dev/null | head -1)
+    fi
 else
     log_warning "无法构建主机 protoc，将尝试使用系统 protoc"
     HOST_PROTOC="protoc"
@@ -138,7 +156,8 @@ export AR="$SAVE_AR"
 export RANLIB="$SAVE_RANLIB"
 
 # 验证主机 protoc 是否存在
-if [[ -z "$HOST_PROTOC" ]] || [[ ! -f "$HOST_PROTOC" ]]; then
+# 使用 -e 而不是 -f，因为 find 可能返回符号链接
+if [[ -z "$HOST_PROTOC" ]] || [[ ! -e "$HOST_PROTOC" ]]; then
     log_warning "主机 protoc 未找到，将尝试使用系统 protoc（如果可用）"
     HOST_PROTOC="protoc"
 fi
