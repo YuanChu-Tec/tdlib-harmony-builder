@@ -191,7 +191,47 @@ fi
 
 # 配置 CMake
 # 注意：Protobuf 33.4+ 依赖 Abseil，需要确保 Abseil 被正确构建和安装
-# 添加 -D_POSIX_C_SOURCE 和 -DOHOS 以支持 posix_close 等函数
+# 添加 -D_POSIX_C_SOURCE 以启用 POSIX 函数（如 close）
+# 
+# 重要：HarmonyOS SDK 的 clang 15.0.4 在处理 protobuf 35.1 的某些 C++ 代码时可能崩溃
+# 因此使用 -O0 禁用优化来避免编译器段错误
+# 注意：不要添加 -fno-exceptions 或 -fno-rtti，因为 protobuf 35.x 大量使用异常和 RTTI
+PROTOBUF_C_FLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L"
+PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -std=c++17"
+
+# 移除 -O3 并替换为 -O0（禁用优化以避免编译器崩溃）
+PROTOBUF_C_FLAGS=$(echo "$PROTOBUF_C_FLAGS" | sed 's/-O[0-9s]/-O0/g')
+PROTOBUF_CXX_FLAGS=$(echo "$PROTOBUF_CXX_FLAGS" | sed 's/-O[0-9s]/-O0/g')
+
+# 如果替换失败，手动确保 -O0 存在
+if [[ "$PROTOBUF_C_FLAGS" != *"-O0"* ]]; then
+    PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -O0"
+fi
+if [[ "$PROTOBUF_CXX_FLAGS" != *"-O0"* ]]; then
+    PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -O0"
+fi
+
+# 添加额外的标志来避免 clang 15.0.4 段错误
+# -fno-strict-aliasing: 禁用严格别名规则
+PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -fno-strict-aliasing"
+PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -fno-strict-aliasing"
+
+# 自动检测 Abseil 安装路径
+ABSL_DIR=""
+if [[ -d "$ARCH_INSTALL_DIR/lib/cmake/absl" ]]; then
+    ABSL_DIR="$ARCH_INSTALL_DIR/lib/cmake/absl"
+elif [[ -d "$ARCH_INSTALL_DIR/share/cmake/absl" ]]; then
+    ABSL_DIR="$ARCH_INSTALL_DIR/share/cmake/absl"
+fi
+ABSL_CMAKE_ARGS=""
+if [[ -n "$ABSL_DIR" ]]; then
+    log_info "检测到 Abseil: $ABSL_DIR"
+    ABSL_CMAKE_ARGS="-Dabsl_DIR=\"$ABSL_DIR\""
+else
+    log_warning "未检测到 Abseil 安装，protobuf 35.x 需要 Abseil 依赖"
+    log_warning "请先编译安装 Abseil"
+fi
+
 run_command \
     "\"$CMAKE_CMD\" \"$SOURCE_DIR\" \
         -DCMAKE_TOOLCHAIN_FILE=\"$TOOLCHAIN_FILE\" \
@@ -205,11 +245,12 @@ run_command \
         -Dprotobuf_BUILD_EXAMPLES=OFF \
         -Dprotobuf_ABSL_PROVIDER=package \
         -Dprotobuf_INSTALL=ON \
+        $ABSL_CMAKE_ARGS \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_C_COMPILER=\"$CC\" \
         -DCMAKE_CXX_COMPILER=\"$CXX\" \
-        -DCMAKE_C_FLAGS=\"$CFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS\" \
-        -DCMAKE_CXX_FLAGS=\"$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS\" \
+        -DCMAKE_C_FLAGS=\"$PROTOBUF_C_FLAGS\" \
+        -DCMAKE_CXX_FLAGS=\"$PROTOBUF_CXX_FLAGS\" \
         -DCMAKE_EXE_LINKER_FLAGS=\"$LDFLAGS\"" \
     "${LOGS_DIR}/build/protobuf_${ARCH}_configure.log" \
     "配置 Protocol Buffers"
@@ -220,15 +261,22 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # 修复 HarmonyOS 兼容性问题：posix_close 函数不存在
-# 将 posix_close(fd, 0) 替换为 close(fd)
+# HarmonyOS 基于 musl libc，不支持 posix_close
+# 将 posix_close(fd, 0) 统一替换为 close(fd)
 log_step "修复 HarmonyOS 兼容性问题..."
-ZERO_COPY_STREAM_IMPL="$SOURCE_DIR/src/google/protobuf/io/zero_copy_stream_impl.cc"
-if [[ -f "$ZERO_COPY_STREAM_IMPL" ]]; then
-    log_info "修复 zero_copy_stream_impl.cc 中的 posix_close 调用"
-    sed -i 's/posix_close(fd, 0)/close(fd)/g' "$ZERO_COPY_STREAM_IMPL"
+POSIX_CLOSE_FILES=$(grep -rl "posix_close" "$SOURCE_DIR/src" 2>/dev/null || true)
+if [[ -n "$POSIX_CLOSE_FILES" ]]; then
+    log_info "发现以下文件包含 posix_close 调用:"
+    echo "$POSIX_CLOSE_FILES" | head -10
+    while IFS= read -r file; do
+        if [[ -f "$file" ]]; then
+            log_info "修复: $file"
+            sed -i 's/posix_close([^)]*)/close(fd)/g' "$file"
+        fi
+    done <<< "$POSIX_CLOSE_FILES"
     log_success "HarmonyOS 兼容性修复完成"
 else
-    log_warning "未找到 zero_copy_stream_impl.cc，跳过修复"
+    log_info "未找到 posix_close 调用，跳过修复"
 fi
 
 # 编译（使用 cmake --build 以支持不同的生成器）

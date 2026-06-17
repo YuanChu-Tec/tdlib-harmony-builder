@@ -33,16 +33,17 @@ fi
 log_step "开始编译所有依赖库 (架构: $ARCH)"
 
 # 编译顺序（根据依赖关系）
+# protobuf 35.x 依赖 Abseil，因此 abseil 必须在 protobuf 之前编译
 LIBRARIES=(
     "zlib"
     "openssl"
     "sqlite"
     "icu"
-    "protobuf"
     "crc32c"
     "xxhash"
-    "abseil"  # Abseil 需要在 RE2 之前编译
-    "re2"     # RE2 依赖 Abseil
+    "abseil"      # Abseil 供 protobuf 和 RE2 使用
+    "protobuf"    # protobuf 35.x 依赖 Abseil
+    "re2"         # RE2 依赖 Abseil
     "libevent"
     "lz4"
     "snappy"
