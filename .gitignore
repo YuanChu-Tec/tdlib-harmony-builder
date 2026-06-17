@@ -3,7 +3,7 @@ user_config.sh
 user_config.sh.backup.*
 
 # 构建产物
-build/
+/build/
 install/
 dist/
 src/extracted/
