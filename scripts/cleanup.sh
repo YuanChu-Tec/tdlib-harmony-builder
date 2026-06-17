@@ -5,7 +5,7 @@
 #   ./scripts/cleanup.sh           # 清理全部构建产物
 #   ./scripts/cleanup.sh --keep-src   # 仅清理编译产物，保留 src 目录
 #
-# 注意: 下载目录 (src/downloads) 永远不会被清理
+# 注意: 下载目录 (src/downloads) 永远不会被清理！
 
 SCRIPTS_ABS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ABS="$(cd "$SCRIPTS_ABS/.." && pwd)"
@@ -19,19 +19,17 @@ for arg in "$@"; do
     esac
 done
 
-# 下载目录永远不会被清理
+echo ""
+log_step "清理构建文件"
+echo ""
+
+# 下载目录永远不会被清理！
+echo -e "${RED}⚠️  重要提示: 下载目录 (src/downloads/) 永远不会被清理！${NC}"
+echo ""
+
 if [[ "$KEEP_SRC" == "true" ]]; then
-    log_step "清理编译产物（保留 src 目录）"
-    CLEAN_DIRS=(
-        "$BUILD_DIR"
-        "$INSTALL_DIR"
-        "$DIST_DIR"
-        "$LOGS_DIR"
-    )
-    echo "将清理: build/, install/, dist/, logs/"
-    echo "保留: src/downloads/, src/extracted/"
-else
-    log_step "清理构建文件（保留下载目录）"
+    echo "将清理: build/, install/, dist/, logs/, src/extracted/"
+    echo "保留:   src/downloads/ (下载目录)"
     CLEAN_DIRS=(
         "$BUILD_DIR"
         "$INSTALL_DIR"
@@ -39,8 +37,16 @@ else
         "$DIST_DIR"
         "$LOGS_DIR"
     )
+else
     echo "将清理: build/, install/, dist/, logs/, src/extracted/"
-    echo "保留: src/downloads/ (下载目录永远不会被清理)"
+    echo "保留:   src/downloads/ (下载目录永远不会被清理！)"
+    CLEAN_DIRS=(
+        "$BUILD_DIR"
+        "$INSTALL_DIR"
+        "$EXTRACT_DIR"
+        "$DIST_DIR"
+        "$LOGS_DIR"
+    )
 fi
 
 echo ""
@@ -68,4 +74,8 @@ for dir in "${CLEAN_DIRS[@]}"; do
     fi
 done
 
-log_success "清理完成"
+echo ""
+echo -e "${GREEN}✅ 清理完成！${NC}"
+echo ""
+echo "保留的目录:"
+echo "  • src/downloads/ (下载目录 - 永远不会被清理)"

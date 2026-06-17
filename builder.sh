@@ -443,6 +443,10 @@ clean_only() {
     echo "  • $BUILD_DIR"
     echo "  • $INSTALL_DIR"
     echo "  • $EXTRACT_DIR"
+    echo "  • $DIST_DIR"
+    echo "  • $LOGS_DIR"
+    echo ""
+    echo -e "${GREEN}保留: src/downloads/ (下载目录永远不会被清理！)${NC}"
     echo ""
     
     read -p "确定要清理吗？(y/N): " confirm
