@@ -439,14 +439,14 @@ show_menu() {
     
     echo "请选择操作:"
     echo ""
-    echo "  ${GREEN}1.${NC} 完整构建（解压 → 编译 → 打包）"
-    echo "  ${GREEN}2.${NC} 仅编译（使用现有源码）"
-    echo "  ${GREEN}3.${NC} 仅打包已编译的库"
-    echo "  ${GREEN}4.${NC} 清理所有构建文件"
-    echo "  ${GREEN}5.${NC} 运行测试"
-    echo "  ${GREEN}6.${NC} 显示系统信息"
-    echo "  ${GREEN}7.${NC} 编译单个架构"
-    echo "  ${GREEN}0.${NC} 退出"
+    echo -e "  ${GREEN}1.${NC} 完整构建（解压 → 编译 → 打包）"
+    echo -e "  ${GREEN}2.${NC} 仅编译（使用现有源码）"
+    echo -e "  ${GREEN}3.${NC} 仅打包已编译的库"
+    echo -e "  ${GREEN}4.${NC} 清理所有构建文件"
+    echo -e "  ${GREEN}5.${NC} 运行测试"
+    echo -e "  ${GREEN}6.${NC} 显示系统信息"
+    echo -e "  ${GREEN}7.${NC} 编译单个架构"
+    echo -e "  ${GREEN}0.${NC} 退出"
     echo ""
     
     read -p "请输入选项 [0-7]: " choice

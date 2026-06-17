@@ -292,7 +292,8 @@ extract_file() {
         # zip 文件
         log_info "使用 unzip 解压..."
         if command -v unzip &> /dev/null; then
-            unzip -q "$file" -d "$dest" 2>&1
+            # -o 参数：覆盖已存在的文件，不提示
+            unzip -o -q "$file" -d "$dest" 2>&1
             result=$?
         else
             log_error "unzip 命令不可用"

@@ -27,17 +27,33 @@ fi
 APPLIED_COUNT=0
 SKIPPED_COUNT=0
 
-# 只处理 wgetopt 相关补丁（Windows 下 TDLib API 生成器需要）
+# 检查 TDLib HarmonyOS 补丁
+TDLIB_PATCHES=(
+    "tdlib-harmony-thread-affinity.patch"
+    "tdlib-harmony-eventfd-pipe.patch"
+    "tdlib-harmony-asyncfilelog-eventfd.patch"
+)
+
+for patch_file in "${TDLIB_PATCHES[@]}"; do
+    patch_path="$PATCHES_DIR/$patch_file"
+    if [[ ! -f "$patch_path" ]]; then
+        continue
+    fi
+    
+    log_info "TDLib HarmonyOS 补丁: $patch_file"
+    log_info "  → 此补丁在 build_tdlib.sh 中自动应用（配置前）"
+    ((SKIPPED_COUNT++))
+done
+
+# 检查 wgetopt 补丁（Windows 专用）
 for patch_file in "$PATCHES_DIR"/*wgetopt*.patch; do
     if [[ ! -f "$patch_file" ]]; then
         continue
     fi
     
     patch_name=$(basename "$patch_file")
-    log_step "处理补丁: $patch_name"
-    
-    # wgetopt 补丁在 generate_tdlib_api.sh 中处理，这里跳过
-    log_info "此补丁在 API 生成时自动处理，跳过"
+    log_info "wgetopt 补丁: $patch_name"
+    log_info "  → 此补丁在 generate_tdlib_api.sh 中自动处理（仅 Windows/MSYS2）"
     ((SKIPPED_COUNT++))
 done
 
@@ -50,15 +66,19 @@ if [[ $APPLIED_COUNT -gt 0 ]]; then
 fi
 
 if [[ $SKIPPED_COUNT -gt 0 ]]; then
-    log_info "ℹ️  跳过 ($SKIPPED_COUNT 个补丁，已在编译脚本中处理)"
+    log_info "ℹ️  跳过 ($SKIPPED_COUNT 个补丁，将在编译时自动应用)"
 fi
 
 log_info ""
 log_info "说明："
-log_info "  • HarmonyOS 平台适配主要通过编译选项实现（-DOHOS, -DTD_HARMONYOS 等）"
-log_info "  • libphonenumber RE2 兼容性修复在 build_libphonenumber.sh 中内联实现"
-log_info "  • wgetopt Windows 修复在 generate_tdlib_api.sh 中自动处理"
-log_info "  • TDLib HarmonyOS 补丁（线程亲和、AsyncFileLog 无 eventfd）在 build_tdlib.sh 中自动应用"
+log_info "  • TDLib HarmonyOS 补丁（线程亲和、EventFdPipe、AsyncFileLog）"
+log_info "    → 在 build_tdlib.sh 中自动应用（配置前）"
+log_info "  • wgetopt Windows 修复补丁"
+log_info "    → 在 generate_tdlib_api.sh 中自动处理（仅 Windows/MSYS2）"
+log_info "  • libphonenumber RE2 兼容性修复"
+log_info "    → 在 build_libphonenumber.sh 中内联实现"
+log_info "  • 其他库的 HarmonyOS 适配"
+log_info "    → 通过编译选项实现（-DOHOS, -DTD_HARMONYOS 等）"
 log_info "  • 无需手动应用补丁"
 
 exit 0
