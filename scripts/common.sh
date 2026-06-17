@@ -669,90 +669,54 @@ create_build_dir() {
 }
 
 # ============================================
-# 查找源码目录
+# 查找源码目录（灵活匹配，支持任意解压后的目录名）
 # ============================================
 find_source_dir() {
     local lib_name=$1
     local version=$2
     local extract_dir=${3:-"$EXTRACT_DIR"}
     
-    # 1. 优先查找固定名称目录（不带版本号）
-    local fixed_name_dir="${extract_dir}/${lib_name}"
-    if [[ -d "$fixed_name_dir" ]]; then
-        echo "$fixed_name_dir"
-        return 0
-    fi
-    
-    # 特殊处理：TDLib 使用 "td" 作为目录名
-    if [[ "$lib_name" == "tdlib" ]]; then
-        local td_dir="${extract_dir}/td"
-        if [[ -d "$td_dir" ]]; then
-            echo "$td_dir"
-            return 0
-        fi
-    fi
-    
-    # 2. 构建匹配模式列表（按优先级排序）
+    # 1. 优先查找精确匹配的目录名
+    # 支持多种常见命名格式
     local patterns=()
     
-    # 精确匹配：lib-name-version
-    if [[ -n "$version" ]]; then
-        patterns+=("${lib_name}-${version}")
+    # 精确匹配：lib-name（固定名称）
+    patterns+=("${lib_name}")
+    
+    # TDLib 特殊处理：可能是 td 或 tdlib
+    if [[ "$lib_name" == "tdlib" ]]; then
+        patterns+=("td")
+    elif [[ "$lib_name" == "td" ]]; then
+        patterns+=("tdlib")
     fi
     
-    # 特殊格式匹配
-    case "$lib_name" in
-        openssl)
-            # OpenSSL 格式：openssl-3.6.0
-            if [[ -n "$version" ]]; then
-                patterns+=("openssl-${version}")
-            fi
-            patterns+=("openssl-*")
-            ;;
-        sqlite)
-            # SQLite 格式：sqlite-autoconf-3510200
-            if [[ -n "$version" ]]; then
+    # 如果有版本号，尝试带版本号的格式
+    if [[ -n "$version" ]]; then
+        # lib-name-version
+        patterns+=("${lib_name}-${version}")
+        
+        # 特殊格式：sqlite-autoconf-xxx, abseil-cpp-xxx, protobuf-cpp-xxx
+        case "$lib_name" in
+            sqlite)
                 patterns+=("sqlite-autoconf-${version}")
-                patterns+=("sqlite-${version}")
-            fi
-            patterns+=("sqlite-autoconf-*")
-            patterns+=("sqlite-*")
-            ;;
-        abseil)
-            # Abseil 格式：abseil-cpp-lts-20240116.2 或 abseil-cpp-20240116.2
-            if [[ -n "$version" ]]; then
+                ;;
+            abseil)
                 patterns+=("abseil-cpp-lts-${version}")
                 patterns+=("abseil-cpp-${version}")
-            fi
-            patterns+=("abseil-cpp-*")
-            ;;
-        td|tdlib)
-            # TDLib 格式：td-1.8.0
-            if [[ -n "$version" ]]; then
-                patterns+=("td-${version}")
-            fi
-            patterns+=("td-*")
-            ;;
-        protobuf)
-            # Protobuf 格式：protobuf-33.4 或 protobuf-cpp-33.4
-            if [[ -n "$version" ]]; then
-                patterns+=("protobuf-${version}")
+                ;;
+            protobuf)
                 patterns+=("protobuf-cpp-${version}")
-            fi
-            patterns+=("protobuf-cpp-*")
-            patterns+=("protobuf-*")
-            ;;
-        *)
-            # 通用格式
-            if [[ -n "$version" ]]; then
-                patterns+=("${lib_name}-${version}")
-                patterns+=("${lib_name}-${version//./-}")
-                patterns+=("${lib_name}-${version//./_}")
-                patterns+=("${lib_name}${version}")
-            fi
-            patterns+=("${lib_name}-*")
-            ;;
-    esac
+                ;;
+        esac
+    fi
+    
+    # 模糊匹配：以库名开头的任意目录
+    patterns+=("${lib_name}-*")
+    
+    # TDLib 额外的模糊匹配
+    if [[ "$lib_name" == "tdlib" ]]; then
+        patterns+=("td-*")
+    fi
     
     # 按模式顺序查找
     for pattern in "${patterns[@]}"; do
@@ -763,7 +727,7 @@ find_source_dir() {
         fi
     done
     
-    # 最后尝试模糊匹配
+    # 最后尝试不区分大小写的模糊匹配
     local found=$(find "$extract_dir" -maxdepth 1 -type d -iname "*${lib_name}*" 2>/dev/null | head -1)
     if [[ -n "$found" ]] && [[ -d "$found" ]]; then
         echo "$found"

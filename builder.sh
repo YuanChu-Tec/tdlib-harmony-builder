@@ -300,14 +300,15 @@ build_only() {
     # 检查源码是否存在
     if [[ ! -d "$EXTRACT_DIR" ]] || [[ -z "$(ls -A "$EXTRACT_DIR" 2>/dev/null)" ]]; then
         print_error "源码不存在，请按以下步骤操作："
-        echo "  1. 从官方网站下载所需源码压缩包"
-        echo "  2. 重命名为固定名称（不带版本号）："
-        echo "     - openssl.tar.gz, zlib.tar.gz, sqlite.tar.gz, icu.tar.gz"
-        echo "     - protobuf.tar.gz, libphonenumber.tar.gz, crc32c.tar.gz"
-        echo "     - xxhash.tar.gz, abseil.tar.gz, re2.tar.gz, libevent.tar.gz"
-        echo "     - lz4.tar.gz, snappy.tar.gz, double-conversion.tar.gz, tdlib.tar.gz"
+        echo "  1. 从官方网站下载所需源码压缩包（支持任意文件名）"
+        echo "  2. 需要的库：openssl, zlib, sqlite, icu, protobuf, libphonenumber"
+        echo "             crc32c, xxhash, abseil, re2, libevent, lz4, snappy"
+        echo "             double-conversion, tdlib"
         echo "  3. 将压缩包放到目录: $DOWNLOAD_DIR"
         echo "  4. 运行 ./builder.sh --full 自动解压并编译"
+        echo ""
+        echo "  支持的压缩格式：.tar.gz, .tgz, .tar.bz2, .tar.xz, .zip, .tar"
+        echo "  解压后直接使用原目录名，无需重命名"
         return 1
     fi
     

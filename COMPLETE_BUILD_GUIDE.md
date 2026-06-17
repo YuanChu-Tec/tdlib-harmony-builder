@@ -160,14 +160,14 @@ tdlib-harmony-builder/
 │       └── ensure_manual_api_placeholders.sh  # 占位符脚本
 │
 ├── src/                         # 源码目录
-│   ├── downloads/              # 下载的源码包（手动放置）
-│   │   ├── openssl.tar.gz
-│   │   ├── zlib.tar.gz
+│   ├── downloads/              # 下载的源码包（手动放置，支持任意文件名）
+│   │   ├── openssl-3.6.0.tar.gz
+│   │   ├── zlib-1.2.13.tar.gz
 │   │   └── ...
-│   └── extracted/              # 解压后的源码（自动解压，固定名称）
-│       ├── td/                 # TDLib 源码
-│       ├── openssl/            # OpenSSL 源码
-│       ├── zlib/               # zlib 源码
+│   └── extracted/              # 解压后的源码（保留原目录名）
+│       ├── openssl-3.6.0/      # OpenSSL 源码（保留原目录名）
+│       ├── zlib-1.2.13/        # zlib 源码（保留原目录名）
+│       ├── td-1.8.0/           # TDLib 源码（保留原目录名）
 │       └── ...                 # 其他依赖库
 │
 ├── build/                       # 构建目录
@@ -213,31 +213,33 @@ tdlib-harmony-builder/
 
 ### 前置准备
 
-**手动下载源码**：本项目已移除自动下载功能，请自行下载所有依赖库的源码压缩包，并重命名为**固定名称**（不带版本号）。
+**手动下载源码**：本项目已移除自动下载功能，请自行下载所有依赖库的源码压缩包，直接放到 `src/downloads/` 目录即可。
 
 **文件名要求**：
-```
-openssl.tar.gz
-zlib.tar.gz
-sqlite.tar.gz
-icu.tar.gz
-protobuf.tar.gz
-libphonenumber.tar.gz
-crc32c.tar.gz
-xxhash.tar.gz
-abseil.tar.gz
-re2.tar.gz
-libevent.tar.gz
-lz4.tar.gz
-snappy.tar.gz
-double-conversion.tar.gz
-tdlib.tar.gz
-```
+- ✅ **不再有固定文件名要求**，支持任意文件名
+- ✅ 支持多种压缩格式：`.tar.gz`、`.tgz`、`.tar.bz2`、`.tar.xz`、`.zip`、`.tar`
+- ✅ 解压后直接使用原目录名，脚本会自动识别
 
 **操作步骤**：
-1. 从各库官方网站下载源码压缩包
-2. 重命名为上述固定名称（不带版本号）
-3. 将所有压缩包放到 `src/downloads/` 目录
+1. 从各库官方网站下载源码压缩包（如 `openssl-3.6.0.tar.gz`、`zlib-1.2.13.tar.gz`、`td-1.8.0.tar.gz` 等）
+2. 将所有压缩包放到 `src/downloads/` 目录
+
+**需要的库**（可在 `config.sh` 中查看版本要求）：
+- OpenSSL
+- zlib
+- SQLite
+- ICU
+- Protocol Buffers
+- libphonenumber
+- crc32c
+- xxhash
+- Abseil
+- RE2
+- libevent
+- lz4
+- snappy
+- double-conversion
+- TDLib
 
 ### 方式 1: 一键完整构建（推荐）
 
@@ -247,7 +249,7 @@ tdlib.tar.gz
 ```
 
 **执行内容**：
-1. 解压所有源码包（自动重命名为固定名称）
+1. 解压所有源码包（保留原目录名）
 2. 应用 HarmonyOS 适配补丁
 3. 编译所有依赖库（按依赖顺序）
 4. 验证编译结果
@@ -256,7 +258,7 @@ tdlib.tar.gz
 ### 方式 2: 分步执行（更多控制）
 
 ```bash
-# 步骤 1: 解压源码（自动重命名为固定名称）
+# 步骤 1: 解压源码（保留原目录名）
 ./scripts/extract_sources.sh
 
 # 步骤 2: 应用补丁
@@ -281,39 +283,39 @@ tdlib.tar.gz
 **放置位置**: `src/downloads/`
 
 **需要的库**:
-- openssl.tar.gz
-- zlib.tar.gz
-- sqlite.tar.gz
-- icu.tar.gz
-- protobuf.tar.gz
-- crc32c.tar.gz
-- xxhash.tar.gz
-- abseil.tar.gz
-- re2.tar.gz
-- libevent.tar.gz
-- lz4.tar.gz
-- snappy.tar.gz
-- double-conversion.tar.gz
-- libphonenumber.tar.gz
-- tdlib.tar.gz
+- OpenSSL
+- zlib
+- SQLite
+- ICU
+- Protocol Buffers
+- crc32c
+- xxhash
+- Abseil
+- RE2
+- libevent
+- LZ4
+- Snappy
+- double-conversion
+- libphonenumber
+- TDLib
 
 **支持的压缩格式**: `.tar.gz`, `.tgz`, `.tar.bz2`, `.tar.xz`, `.zip`, `.tar`
 
 #### 2. 解压源码 (`extract_sources.sh`)
 
-**功能**: 解压所有下载的源码包，并自动重命名为固定名称
+**功能**: 解压所有下载的源码包（保留原目录名）
 
 **解压位置**: `src/extracted/`
 
-**解压后的目录结构**:
+**解压后的目录结构**（保留原目录名）:
 ```
 src/extracted/
-├── td/
-├── openssl/
-├── zlib/
-├── sqlite/
+├── openssl-3.6.0/
+├── zlib-1.2.13/
+├── sqlite-autoconf-3510200/
 ├── icu/
 │   └── source/
+├── td-1.8.0/
 └── ...
 ```
 

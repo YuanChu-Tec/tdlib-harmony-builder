@@ -34,51 +34,34 @@ export PARALLEL_JOBS=7
 
 ### 3. 准备源码
 
-**手动下载源码**：请自行下载所有依赖库的源码压缩包，并重命名为**固定名称**（不带版本号）。
+**手动下载源码**：请自行下载所有依赖库的源码压缩包，直接放到 `src/downloads/` 目录即可。
 
-**文件名要求**（必须严格按照以下名称命名）：
-```
-openssl.tar.gz
-zlib.tar.gz
-sqlite.tar.gz
-icu.tar.gz
-protobuf.tar.gz
-libphonenumber.tar.gz
-crc32c.tar.gz
-xxhash.tar.gz
-abseil.tar.gz
-re2.tar.gz
-libevent.tar.gz
-lz4.tar.gz
-snappy.tar.gz
-double-conversion.tar.gz
-tdlib.tar.gz
-```
+**文件名要求**：
+- ✅ **不再有固定文件名要求**，支持任意文件名
+- ✅ 支持多种压缩格式：`.tar.gz`、`.tgz`、`.tar.bz2`、`.tar.xz`、`.zip`、`.tar`
+- ✅ 解压后直接使用原目录名，脚本会自动识别
 
 **操作步骤**：
-1. 从各库官方网站下载源码压缩包
-2. 重命名为上述固定名称（不带版本号）
-3. 将所有压缩包放到 `src/downloads/` 目录
-4. 运行 `./builder.sh --full` 自动解压并编译
+1. 从各库官方网站下载源码压缩包（如 `openssl-3.6.0.tar.gz`、`zlib-1.2.13.tar.gz`、`td-1.8.0.tar.gz` 等）
+2. 将所有压缩包放到 `src/downloads/` 目录
+3. 运行 `./builder.sh --full` 自动解压并编译
 
-**支持的压缩格式**：`.tar.gz`、`.tgz`、`.tar.bz2`、`.tar.xz`、`.zip`、`.tar`
-
-**推荐版本**（可在 `config.sh` 中查看）：
-- OpenSSL: 1.1.1w+
-- zlib: 1.2.13+
-- SQLite: 3.42+
-- ICU: 72.1+
-- Protobuf: 3.21.12+
-- libphonenumber: 8.13.14+
-- crc32c: 1.1.2+
-- xxhash: 0.8.2+
-- Abseil: 20240116.2+
-- RE2: 2023-06-01+
-- libevent: 2.1.12+
-- lz4: 1.9.4+
-- snappy: 1.1.9+
-- double-conversion: 3.2.1+
-- TDLib: 1.8.0+
+**需要的库**（可在 `config.sh` 中查看版本要求）：
+- OpenSSL
+- zlib
+- SQLite
+- ICU
+- Protocol Buffers
+- libphonenumber
+- crc32c
+- xxhash
+- Abseil
+- RE2
+- libevent
+- lz4
+- snappy
+- double-conversion
+- TDLib
 
 ### 4. 验证配置
 
