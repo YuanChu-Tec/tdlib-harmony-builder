@@ -10,121 +10,80 @@ log_step "开始解压源码包"
 # 确保解压目录存在
 ensure_dir "$EXTRACT_DIR"
 
+# 定义允许的库名称（固定名称，无版本号）
+ALLOWED_LIBS=(
+    "openssl"
+    "zlib"
+    "sqlite"
+    "icu"
+    "protobuf"
+    "libphonenumber"
+    "crc32c"
+    "xxhash"
+    "abseil"
+    "re2"
+    "libevent"
+    "lz4"
+    "snappy"
+    "double-conversion"
+    "tdlib"
+)
+
+# 支持的压缩格式
+ARCHIVE_EXTENSIONS=(
+    ".tar.gz"
+    ".tgz"
+    ".tar.bz2"
+    ".tar.xz"
+    ".zip"
+    ".tar"
+)
+
+# 查找所有允许的压缩文件
+find_allowed_archives() {
+    local lib_name=$1
+    for ext in "${ARCHIVE_EXTENSIONS[@]}"; do
+        local archive_path="${DOWNLOAD_DIR}/${lib_name}${ext}"
+        if [[ -f "$archive_path" ]]; then
+            echo "$archive_path"
+            return 0
+        fi
+    done
+    return 1
+}
+
 # 检查下载目录
-if [[ ! -d "$DOWNLOAD_DIR" ]] || [[ -z "$(ls -A "$DOWNLOAD_DIR" 2>/dev/null)" ]]; then
-    log_error "下载目录为空，请先运行下载脚本"
+if [[ ! -d "$DOWNLOAD_DIR" ]]; then
+    log_error "下载目录不存在: $DOWNLOAD_DIR"
     exit 1
 fi
 
-# 解压所有压缩包
-FAILED_EXTRACTS=()
-SUCCESS_EXTRACTS=()
-
-# 支持的压缩格式（分别查找，兼容 Git Bash）
-ARCHIVE_PATTERNS=(
-    "*.tar.gz"
-    "*.tgz"
-    "*.tar.bz2"
-    "*.tar.xz"
-    "*.zip"
-    "*.tar"
-)
-
-# 收集所有压缩文件
+# 查找所有允许的压缩文件
 ARCHIVE_FILES=()
-
-# 分别查找每种格式的文件（兼容 Git Bash 和 Windows）
-for pattern in "${ARCHIVE_PATTERNS[@]}"; do
-    # 方法1: 使用 find 命令（推荐，兼容性最好）
-    if command -v find &> /dev/null; then
-        # 使用 find 查找文件
-        find_output=$(find "$DOWNLOAD_DIR" -maxdepth 1 -type f -iname "$pattern" 2>/dev/null)
-        
-        # 处理 find 的输出（兼容 Git Bash）
-        if [[ -n "$find_output" ]]; then
-            # 将多行输出转换为数组
-            OLD_IFS="$IFS"
-            IFS=$'\n'
-            for archive in $find_output; do
-                if [[ -n "$archive" ]] && [[ -f "$archive" ]]; then
-                    # 检查是否已存在（避免重复）
-                    exists=false
-                    for existing in "${ARCHIVE_FILES[@]}"; do
-                        if [[ "$existing" == "$archive" ]]; then
-                            exists=true
-                            break
-                        fi
-                    done
-                    if [[ "$exists" == false ]]; then
-                        ARCHIVE_FILES+=("$archive")
-                    fi
-                fi
-            done
-            IFS="$OLD_IFS"
-        fi
+for lib in "${ALLOWED_LIBS[@]}"; do
+    archive=$(find_allowed_archives "$lib")
+    if [[ -n "$archive" ]]; then
+        ARCHIVE_FILES+=("$archive")
+        log_info "找到: $(basename "$archive")"
     fi
-    
-    # 方法2: 使用通配符（备用，兼容 Git Bash）
-    # 注意：在 Git Bash 中，通配符可能不会展开，但可以作为备用
-    for archive in "$DOWNLOAD_DIR"/$pattern; do
-        # 检查文件是否存在且不是通配符本身
-        if [[ -f "$archive" ]] && [[ "$archive" != "$DOWNLOAD_DIR/$pattern" ]]; then
-            # 检查是否已存在（避免重复）
-            exists=false
-            for existing in "${ARCHIVE_FILES[@]}"; do
-                if [[ "$existing" == "$archive" ]]; then
-                    exists=true
-                    break
-                fi
-            done
-            if [[ "$exists" == false ]]; then
-                ARCHIVE_FILES+=("$archive")
-            fi
-        fi
-    done
 done
-
-# 去重（避免重复）
-if [[ ${#ARCHIVE_FILES[@]} -gt 0 ]]; then
-    # 使用关联数组去重（如果支持）
-    if declare -A seen 2>/dev/null; then
-        UNIQUE_FILES=()
-        for archive in "${ARCHIVE_FILES[@]}"; do
-            if [[ -z "${seen[$archive]}" ]]; then
-                seen["$archive"]=1
-                UNIQUE_FILES+=("$archive")
-            fi
-        done
-        ARCHIVE_FILES=("${UNIQUE_FILES[@]}")
-    else
-        # 如果不支持关联数组，使用简单去重
-        UNIQUE_FILES=()
-        for archive in "${ARCHIVE_FILES[@]}"; do
-            exists=false
-            for existing in "${UNIQUE_FILES[@]}"; do
-                if [[ "$existing" == "$archive" ]]; then
-                    exists=true
-                    break
-                fi
-            done
-            if [[ "$exists" == false ]]; then
-                UNIQUE_FILES+=("$archive")
-            fi
-        done
-        ARCHIVE_FILES=("${UNIQUE_FILES[@]}")
-    fi
-fi
 
 # 解压找到的文件
 if [[ ${#ARCHIVE_FILES[@]} -eq 0 ]]; then
-    log_warning "未找到任何压缩文件"
-    log_info "请检查下载目录: $DOWNLOAD_DIR"
+    log_error "未找到任何允许的压缩文件"
+    log_info "允许的文件名称:"
+    for lib in "${ALLOWED_LIBS[@]}"; do
+        echo "  • ${lib}.tar.gz (或其他压缩格式)"
+    done
     log_info "下载目录内容:"
     ls -la "$DOWNLOAD_DIR" 2>/dev/null || echo "  无法列出目录内容"
     exit 1
 fi
 
-log_info "找到 ${#ARCHIVE_FILES[@]} 个压缩文件"
+log_info "找到 ${#ARCHIVE_FILES[@]} 个允许的压缩文件"
+
+FAILED_EXTRACTS=()
+SUCCESS_EXTRACTS=()
 
 for archive in "${ARCHIVE_FILES[@]}"; do
     if [[ ! -f "$archive" ]]; then
@@ -136,19 +95,69 @@ for archive in "${ARCHIVE_FILES[@]}"; do
     
     # 解压文件
     if extract_file "$archive" "$EXTRACT_DIR"; then
+        # 获取库名称（去掉扩展名）
+        lib_name=$(echo "$filename" | sed 's/\.[^.]*$//' | sed 's/\.[^.]*$//')
+        
+        # 检查解压后的目录是否需要重命名
+        # 解压后可能是 openssl-1.1.1w 这样的目录，需要重命名为 openssl
+        
+        # 方法：查找以 lib_name 开头的目录（处理 openssl-3.6.0, sqlite-autoconf-3510200 等情况）
+        local extracted_dir=""
+        
+        # 首先检查是否已经是固定名称
+        local fixed_name_dir="${EXTRACT_DIR}/${lib_name}"
+        if [[ -d "$fixed_name_dir" ]]; then
+            log_info "目录已为固定名称: $lib_name"
+            extracted_dir="$fixed_name_dir"
+        else
+            # 查找以 lib_name 开头的目录
+            # 处理各种格式：openssl-3.6.0, sqlite-autoconf-3510200, abseil-cpp-lts-20240116.2, td-1.8.0 等
+            local found_dirs=()
+            while IFS= read -r dir; do
+                found_dirs+=("$dir")
+            done < <(find "$EXTRACT_DIR" -maxdepth 1 -type d -name "${lib_name}*" 2>/dev/null)
+            
+            # 如果找到多个匹配，选择最可能的一个
+            if [[ ${#found_dirs[@]} -eq 1 ]]; then
+                extracted_dir="${found_dirs[0]}"
+            elif [[ ${#found_dirs[@]} -gt 1 ]]; then
+                # 优先选择版本号格式的目录
+                for dir in "${found_dirs[@]}"; do
+                    if [[ "$dir" =~ ${lib_name}-[0-9] ]]; then
+                        extracted_dir="$dir"
+                        break
+                    fi
+                done
+                # 如果没有找到版本号格式的，选择第一个
+                if [[ -z "$extracted_dir" ]]; then
+                    extracted_dir="${found_dirs[0]}"
+                fi
+            fi
+            
+            # 特殊处理：TDLib 通常解压为 td-xxx
+            if [[ -z "$extracted_dir" ]] && [[ "$lib_name" == "tdlib" ]]; then
+                local td_dir=$(find "$EXTRACT_DIR" -maxdepth 1 -type d -name "td*" 2>/dev/null | head -1)
+                if [[ -d "$td_dir" ]]; then
+                    extracted_dir="$td_dir"
+                fi
+            fi
+        fi
+        
+        # 如果找到解压目录且不是固定名称，则重命名
+        if [[ -n "$extracted_dir" ]] && [[ -d "$extracted_dir" ]]; then
+            local final_dir="${EXTRACT_DIR}/${lib_name}"
+            if [[ "$extracted_dir" != "$final_dir" ]]; then
+                log_info "重命名目录: $(basename "$extracted_dir") -> $lib_name"
+                rm -rf "$final_dir" 2>/dev/null
+                mv "$extracted_dir" "$final_dir"
+            fi
+        fi
+        
         log_success "$filename 解压完成"
         SUCCESS_EXTRACTS+=("$filename")
     else
         log_error "$filename 解压失败"
         log_info "文件路径: $archive"
-        log_info "尝试手动解压命令:"
-        if [[ "$filename" == *.tgz ]] || [[ "$filename" == *.tar.gz ]]; then
-            log_info "  tar -xzf \"$archive\" -C \"$EXTRACT_DIR\""
-        elif [[ "$filename" == *.tar.bz2 ]]; then
-            log_info "  tar -xjf \"$archive\" -C \"$EXTRACT_DIR\""
-        elif [[ "$filename" == *.zip ]]; then
-            log_info "  unzip \"$archive\" -d \"$EXTRACT_DIR\""
-        fi
         FAILED_EXTRACTS+=("$filename")
     fi
 done

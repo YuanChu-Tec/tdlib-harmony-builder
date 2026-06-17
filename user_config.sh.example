@@ -59,30 +59,6 @@ export BUILD_MODE="${BUILD_MODE:-Release}"
 export ARCHITECTURES="${ARCHITECTURES:-arm64-v8a}"
 
 # ============================================
-# 下载配置
-# ============================================
-
-# 是否自动下载最新版本
-# true/auto/latest: 自动获取并下载最新版本
-# false: 使用 config.sh 中定义的固定版本（推荐，更稳定）
-# 默认: false
-export USE_LATEST_VERSION="${USE_LATEST_VERSION:-false}"
-
-# 下载镜像源（可选）
-# 如果在中国大陆，可以使用镜像源加速下载
-# 可选值: "" (默认), "china", "huawei"
-# 默认: "" (使用官方源)
-export DOWNLOAD_MIRROR="${DOWNLOAD_MIRROR:-}"
-
-# 下载超时时间（秒）
-# 默认: 300
-export DOWNLOAD_TIMEOUT="${DOWNLOAD_TIMEOUT:-300}"
-
-# 下载重试次数
-# 默认: 3
-export DOWNLOAD_RETRIES="${DOWNLOAD_RETRIES:-3}"
-
-# ============================================
 # 路径配置（高级，通常不需要修改）
 # ============================================
 

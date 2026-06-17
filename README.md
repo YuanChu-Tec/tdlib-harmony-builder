@@ -32,20 +32,40 @@ export OHOS_API_LEVEL=20
 export PARALLEL_JOBS=7
 ```
 
-### 3. 验证配置
+### 3. 准备源码
+
+**手动下载源码**：请自行下载所有依赖库的源码，并解压到 `src/extracted/` 目录。
+
+需要的库及其版本（可在 `config.sh` 中修改）：
+- OpenSSL: 1.1.1w
+- zlib: 1.2.13
+- SQLite: 3420000
+- ICU: 72.1
+- Protobuf: 3.21.12
+- libphonenumber: 8.13.14
+- crc32c: 1.1.2
+- xxhash: 0.8.2
+- Abseil: 20240116.2
+- RE2: 2023-06-01
+- libevent: 2.1.12
+- lz4: 1.9.4
+- snappy: 1.1.9
+- double-conversion: 3.2.1
+- TDLib: 1.8.0
+
+### 4. 验证配置
 
 ```bash
 source config.sh && validate_config
 ```
 
-### 4. 开始构建
+### 5. 开始构建
 
 ```bash
 # 完整构建（推荐）
 ./builder.sh --full
 
 # 或分步执行
-./scripts/download_sources.sh      # 下载源码
 ./scripts/extract_sources.sh       # 解压源码
 ./scripts/apply_patches.sh         # 应用补丁
 ./scripts/build_all.sh --arch arm64-v8a  # 编译
@@ -65,7 +85,6 @@ tdlib-harmony-builder/
 ├── setup_env.sh              # 环境设置脚本
 ├── scripts/                  # 构建脚本
 │   ├── init_config.sh        # 初始化配置脚本
-│   ├── get_latest_version.sh  # 获取最新版本脚本
 │   ├── build/                # 各库编译脚本
 │   └── ...
 ├── patches/                  # HarmonyOS 适配补丁
@@ -82,37 +101,11 @@ tdlib-harmony-builder/
 
 ### 可选配置
 
-- **USE_LATEST_VERSION**: 是否自动获取最新版本（`true`/`false`，默认 `false`）
 - **PARALLEL_JOBS**: 并行编译任务数（默认: CPU核心数）
 - **ARCHITECTURES**: 目标架构（默认: arm64-v8a）
 - **BUILD_MODE**: 构建模式（Release 或 Debug）
-- **DOWNLOAD_MIRROR**: 下载镜像源（china, huawei）
 
 详细配置说明请查看 `user_config.sh.example`。
-
-## 🔄 自动获取最新版本
-
-### 启用自动版本
-
-在 `user_config.sh` 中设置：
-
-```bash
-export USE_LATEST_VERSION="true"
-```
-
-### 检查特定库的最新版本
-
-```bash
-./scripts/get_latest_version.sh tdlib
-```
-
-### 工作原理
-
-- **GitHub 仓库**: 使用 GitHub API 获取最新 release/tag
-- **官方网站**: 解析官网获取最新版本
-- **失败回退**: 如果无法获取，自动使用默认稳定版本
-
-详细说明请查看 [自动版本文档](docs/AUTO_VERSION.md)。
 
 ## 📚 文档
 
@@ -157,8 +150,6 @@ export USE_LATEST_VERSION="true"
 - `scripts/test_build.sh` - 测试构建系统
 
 ### 其他工具
-- `scripts/get_latest_version.sh` - 获取最新版本
-- `scripts/reset_to_latest.sh` - 重置并下载所有最新版本
 - `scripts/package_dist.sh` - 打包发布
 
 ## 📝 许可证

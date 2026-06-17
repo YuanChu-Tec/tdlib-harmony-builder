@@ -153,41 +153,6 @@ ensure_dir() {
 }
 
 # ============================================
-# 下载函数
-# ============================================
-download_file() {
-    local url=$1
-    local dest=$2
-    local max_retries=${3:-3}
-    local retry_delay=${4:-5}
-    
-    # 如果文件已存在，跳过下载
-    if [[ -f "$dest" ]]; then
-        log_info "文件已存在: $(basename "$dest")"
-        return 0
-    fi
-    
-    log_info "下载: $(basename "$dest")"
-    
-    local retry=0
-    while [[ $retry -lt $max_retries ]]; do
-        if wget -q --show-progress -O "$dest" "$url" 2>&1; then
-            log_success "下载成功: $(basename "$dest")"
-            return 0
-        fi
-        
-        retry=$((retry + 1))
-        if [[ $retry -lt $max_retries ]]; then
-            log_warning "下载失败，重试 $retry/$max_retries..."
-            sleep $retry_delay
-        fi
-    done
-    
-    log_error "下载失败: $url"
-    return 1
-}
-
-# ============================================
 # 解压函数
 # ============================================
 extract_file() {
@@ -711,30 +676,31 @@ find_source_dir() {
     local version=$2
     local extract_dir=${3:-"$EXTRACT_DIR"}
     
-    # 特殊处理：ICU 目录名就是 "icu"，不需要版本号
-    if [[ "$lib_name" == "icu" ]]; then
-        local found=$(find "$extract_dir" -maxdepth 1 -type d -name "icu" 2>/dev/null | head -1)
-        if [[ -n "$found" ]] && [[ -d "$found" ]]; then
-            echo "$found"
-            return 0
-        fi
-        # 也尝试 icu4c-* 格式
-        found=$(find "$extract_dir" -maxdepth 1 -type d -name "icu4c-*" 2>/dev/null | head -1)
-        if [[ -n "$found" ]] && [[ -d "$found" ]]; then
-            echo "$found"
+    # 1. 优先查找固定名称目录（不带版本号）
+    local fixed_name_dir="${extract_dir}/${lib_name}"
+    if [[ -d "$fixed_name_dir" ]]; then
+        echo "$fixed_name_dir"
+        return 0
+    fi
+    
+    # 特殊处理：TDLib 使用 "td" 作为目录名
+    if [[ "$lib_name" == "tdlib" ]]; then
+        local td_dir="${extract_dir}/td"
+        if [[ -d "$td_dir" ]]; then
+            echo "$td_dir"
             return 0
         fi
     fi
     
-    # 构建匹配模式列表（按优先级排序）
+    # 2. 构建匹配模式列表（按优先级排序）
     local patterns=()
     
-    # 1. 精确匹配：lib-name-version
+    # 精确匹配：lib-name-version
     if [[ -n "$version" ]]; then
         patterns+=("${lib_name}-${version}")
     fi
     
-    # 2. 特殊格式匹配
+    # 特殊格式匹配
     case "$lib_name" in
         openssl)
             # OpenSSL 格式：openssl-3.6.0
@@ -797,13 +763,11 @@ find_source_dir() {
         fi
     done
     
-    # 最后尝试模糊匹配（但排除 ICU，避免误匹配）
-    if [[ "$lib_name" != "icu" ]]; then
-        local found=$(find "$extract_dir" -maxdepth 1 -type d -iname "*${lib_name}*" 2>/dev/null | grep -v "icu" | head -1)
-        if [[ -n "$found" ]] && [[ -d "$found" ]]; then
-            echo "$found"
-            return 0
-        fi
+    # 最后尝试模糊匹配
+    local found=$(find "$extract_dir" -maxdepth 1 -type d -iname "*${lib_name}*" 2>/dev/null | head -1)
+    if [[ -n "$found" ]] && [[ -d "$found" ]]; then
+        echo "$found"
+        return 0
     fi
     
     return 1

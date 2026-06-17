@@ -60,20 +60,6 @@ print_divider() {
 # 构建流程函数
 # ============================================
 
-download_sources() {
-    print_step "下载依赖库源码"
-    
-    local log_file="${LOGS_DIR}/download/download_${BUILD_DATE}.log"
-    
-    if ! bash "${SCRIPTS_DIR}/download_sources.sh" 2>&1 | tee "$log_file"; then
-        print_error "源码下载失败"
-        return 1
-    fi
-    
-    print_success "源码下载完成"
-    return 0
-}
-
 extract_sources() {
     print_step "解压源码包"
     
@@ -185,17 +171,12 @@ full_build() {
     
     local start_time=$(date +%s)
     
-    # 1. 下载源码
-    if ! download_sources; then
-        return 1
-    fi
-    
-    # 2. 解压源码
+    # 1. 解压源码
     if ! extract_sources; then
         return 1
     fi
     
-    # 3. 应用补丁
+    # 2. 应用补丁
     if ! apply_patches; then
         print_warning "补丁应用可能不完整"
     fi
@@ -318,8 +299,15 @@ build_only() {
     
     # 检查源码是否存在
     if [[ ! -d "$EXTRACT_DIR" ]] || [[ -z "$(ls -A "$EXTRACT_DIR" 2>/dev/null)" ]]; then
-        print_error "源码不存在，请先下载源码"
-        echo "运行: ./builder.sh --download"
+        print_error "源码不存在，请按以下步骤操作："
+        echo "  1. 从官方网站下载所需源码压缩包"
+        echo "  2. 重命名为固定名称（不带版本号）："
+        echo "     - openssl.tar.gz, zlib.tar.gz, sqlite.tar.gz, icu.tar.gz"
+        echo "     - protobuf.tar.gz, libphonenumber.tar.gz, crc32c.tar.gz"
+        echo "     - xxhash.tar.gz, abseil.tar.gz, re2.tar.gz, libevent.tar.gz"
+        echo "     - lz4.tar.gz, snappy.tar.gz, double-conversion.tar.gz, tdlib.tar.gz"
+        echo "  3. 将压缩包放到目录: $DOWNLOAD_DIR"
+        echo "  4. 运行 ./builder.sh --full 自动解压并编译"
         return 1
     fi
     
@@ -349,15 +337,6 @@ build_only() {
     fi
     
     return 0
-}
-
-download_only() {
-    print_header
-    echo "仅下载源码"
-    echo ""
-    
-    download_sources
-    extract_sources
 }
 
 clean_only() {
@@ -459,18 +438,17 @@ show_menu() {
     
     echo "请选择操作:"
     echo ""
-    echo "  ${GREEN}1.${NC} 完整构建（下载 → 编译 → 打包）"
+    echo "  ${GREEN}1.${NC} 完整构建（解压 → 编译 → 打包）"
     echo "  ${GREEN}2.${NC} 仅编译（使用现有源码）"
-    echo "  ${GREEN}3.${NC} 仅下载源码"
-    echo "  ${GREEN}4.${NC} 仅打包已编译的库"
-    echo "  ${GREEN}5.${NC} 清理所有构建文件"
-    echo "  ${GREEN}6.${NC} 运行测试"
-    echo "  ${GREEN}7.${NC} 显示系统信息"
-    echo "  ${GREEN}8.${NC} 编译单个架构"
+    echo "  ${GREEN}3.${NC} 仅打包已编译的库"
+    echo "  ${GREEN}4.${NC} 清理所有构建文件"
+    echo "  ${GREEN}5.${NC} 运行测试"
+    echo "  ${GREEN}6.${NC} 显示系统信息"
+    echo "  ${GREEN}7.${NC} 编译单个架构"
     echo "  ${GREEN}0.${NC} 退出"
     echo ""
     
-    read -p "请输入选项 [0-8]: " choice
+    read -p "请输入选项 [0-7]: " choice
     echo ""
     
     case $choice in
@@ -481,21 +459,18 @@ show_menu() {
             build_only
             ;;
         3)
-            download_only
-            ;;
-        4)
             package_distribution
             ;;
-        5)
+        4)
             clean_only
             ;;
-        6)
+        5)
             run_tests
             ;;
-        7)
+        6)
             show_system_info
             ;;
-        8)
+        7)
             echo "选择要编译的架构:"
             echo "  1) arm64-v8a"
             echo "  2) armeabi-v7a"
@@ -538,7 +513,6 @@ show_help() {
     echo "选项:"
     echo "  --full            完整构建流程"
     echo "  --build           仅编译现有源码"
-    echo "  --download        仅下载源码"
     echo "  --package         仅打包已编译的库"
     echo "  --clean           清理构建文件"
     echo "  --test            运行测试"
@@ -570,10 +544,6 @@ if [[ $# -gt 0 ]]; then
             ;;
         --build)
             build_only
-            exit $?
-            ;;
-        --download)
-            download_only
             exit $?
             ;;
         --package)

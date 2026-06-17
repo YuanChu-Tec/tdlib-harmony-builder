@@ -126,9 +126,6 @@ export CMAKE_DIR=$(to_absolute_path "${CMAKE_DIR:-${PROJECT_ROOT}/cmake}" "$PROJ
 mkdir -p "${DOWNLOAD_DIR}" "${EXTRACT_DIR}" "${BUILD_DIR}" \
          "${INSTALL_DIR}" "${DIST_DIR}" "${LOGS_DIR}" "${CMAKE_DIR}"
 
-# 如果启用自动获取最新版本，在加载时更新（延迟到需要时）
-# 注意：版本更新会在 download_sources.sh 中执行，避免每次加载配置都查询网络
-
 # 验证配置（如果直接运行 config.sh，会进行验证）
 # 如果从其他脚本加载，可以通过 validate_config() 函数手动验证
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -230,13 +227,7 @@ fi
 # ============================================
 # 库版本配置
 # ============================================
-# 是否使用最新版本（在 user_config.sh 中可配置）
-# 如果设置为 "auto" 或 "latest"，将自动获取最新版本
-# 如果设置为具体版本号，将使用该版本
-# 默认: 使用固定版本（稳定）
-export USE_LATEST_VERSION="${USE_LATEST_VERSION:-false}"
-
-# 默认版本（如果无法获取最新版本或 USE_LATEST_VERSION=false 时使用）
+# 库版本（用户可自行修改）
 export OPENSSL_VERSION_DEFAULT="1.1.1w"
 export ZLIB_VERSION_DEFAULT="1.2.13"
 export SQLITE_VERSION_DEFAULT="3420000"
@@ -269,151 +260,6 @@ export LZ4_VERSION="${LZ4_VERSION:-$LZ4_VERSION_DEFAULT}"
 export SNAPPY_VERSION="${SNAPPY_VERSION:-$SNAPPY_VERSION_DEFAULT}"
 export DOUBLE_CONVERSION_VERSION="${DOUBLE_CONVERSION_VERSION:-$DOUBLE_CONVERSION_VERSION_DEFAULT}"
 export TDLIB_VERSION="${TDLIB_VERSION:-$TDLIB_VERSION_DEFAULT}"
-
-# ============================================
-# 获取最新版本函数
-# ============================================
-update_to_latest_versions() {
-    if [[ "$USE_LATEST_VERSION" != "true" ]] && \
-       [[ "$USE_LATEST_VERSION" != "auto" ]] && \
-       [[ "$USE_LATEST_VERSION" != "latest" ]]; then
-        return 0  # 不使用最新版本，跳过
-    fi
-    
-    # 简单的日志函数（如果 common.sh 未加载）
-    if ! command -v log_info &> /dev/null; then
-        log_info() { echo "ℹ️  $1"; }
-        log_success() { echo "✅ $1"; }
-        log_warning() { echo "⚠️  $1"; }
-        log_error() { echo "❌ $1" >&2; }
-    fi
-    
-    log_info "正在获取最新版本..."
-    
-    # 加载版本获取函数
-    if [[ -f "$SCRIPTS_DIR/get_latest_version.sh" ]]; then
-        source "$SCRIPTS_DIR/get_latest_version.sh"
-    else
-        log_warning "版本获取脚本不存在，使用默认版本"
-        return 1
-    fi
-    
-    # 需要检查的库
-    # 注意：RE2 新版本对 Abseil 依赖较重，且需要完整的 C++17 标准库支持，
-    # 在 HarmonyOS NDK 上存在兼容性问题，因此这里**刻意不对 RE2 使用最新版本**，
-    # 而是固定在 RE2_VERSION_DEFAULT（例如 2023-06-01）这一已验证可用的版本。
-    # 如需升级 RE2，请手动在 config.sh 中调整 RE2_VERSION_DEFAULT，并自行验证兼容性。
-    local libraries=(
-        "openssl:OPENSSL_VERSION"
-        "zlib:ZLIB_VERSION"
-        "sqlite:SQLITE_VERSION"
-        "icu:ICU_VERSION"
-        "protobuf:PROTOBUF_VERSION"
-        "libphonenumber:LIBPHONENUMBER_VERSION"
-        "crc32c:CRC32C_VERSION"
-        "xxhash:XXHASH_VERSION"
-        "abseil:ABSEIL_VERSION"
-        "libevent:LIBEVENT_VERSION"
-        "lz4:LZ4_VERSION"
-        "snappy:SNAPPY_VERSION"
-        "double-conversion:DOUBLE_CONVERSION_VERSION"
-        "tdlib:TDLIB_VERSION"
-    )
-    
-    local updated=0
-    local failed=0
-    
-    for lib_info in "${libraries[@]}"; do
-        IFS=':' read -r lib_name var_name <<< "$lib_info"
-        
-        log_info "检查 $lib_name 最新版本..."
-        local latest_version=$(get_latest_version "$lib_name" 2>/dev/null)
-        
-        if [[ -n "$latest_version" ]]; then
-            export "$var_name"="$latest_version"
-            log_success "$lib_name: $latest_version"
-            updated=$((updated + 1))
-        else
-            log_warning "$lib_name: 无法获取最新版本，使用默认版本"
-            failed=$((failed + 1))
-        fi
-    done
-    
-    if [[ $updated -gt 0 ]]; then
-        log_success "已更新 $updated 个库到最新版本"
-    fi
-    
-    if [[ $failed -gt 0 ]]; then
-        log_warning "$failed 个库使用默认版本"
-    fi
-    
-    return 0
-}
-
-# ============================================
-# 下载URL配置
-# ============================================
-get_download_url() {
-    local lib=$1
-    local version=$2
-    
-    case $lib in
-        openssl)
-            echo "https://www.openssl.org/source/openssl-${version}.tar.gz"
-            ;;
-        zlib)
-            echo "https://zlib.net/zlib-${version}.tar.gz"
-            ;;
-        sqlite)
-            local year=$(echo $version | cut -c1-4)
-            local month=$(echo $version | cut -c5-6 | sed 's/^0//')
-            echo "https://sqlite.org/${year}/sqlite-autoconf-${version}.tar.gz"
-            ;;
-        icu)
-            local version_underscore=$(echo $version | tr '.' '_')
-            echo "https://github.com/unicode-org/icu/releases/download/release-${version//./-}/icu4c-${version_underscore}-src.tgz"
-            ;;
-        protobuf)
-            echo "https://github.com/protocolbuffers/protobuf/releases/download/v${version}/protobuf-cpp-${version}.tar.gz"
-            ;;
-        libphonenumber)
-            echo "https://github.com/google/libphonenumber/archive/refs/tags/v${version}.tar.gz"
-            ;;
-        crc32c)
-            echo "https://github.com/google/crc32c/archive/refs/tags/${version}.tar.gz"
-            ;;
-        xxhash)
-            echo "https://github.com/Cyan4973/xxHash/archive/refs/tags/v${version}.tar.gz"
-            ;;
-        abseil)
-            # Abseil 使用 LTS 版本标签格式：lts-20240116.2
-            local lts_version="lts-${version}"
-            echo "https://github.com/abseil/abseil-cpp/archive/refs/tags/${lts_version}.tar.gz"
-            ;;
-        re2)
-            echo "https://github.com/google/re2/archive/refs/tags/${version}.tar.gz"
-            ;;
-        libevent)
-            echo "https://github.com/libevent/libevent/releases/download/release-${version}/libevent-${version}-stable.tar.gz"
-            ;;
-        lz4)
-            echo "https://github.com/lz4/lz4/archive/refs/tags/v${version}.tar.gz"
-            ;;
-        snappy)
-            echo "https://github.com/google/snappy/archive/refs/tags/${version}.tar.gz"
-            ;;
-        double-conversion)
-            echo "https://github.com/google/double-conversion/archive/refs/tags/v${version}.tar.gz"
-            ;;
-        tdlib)
-            echo "https://github.com/tdlib/td/archive/refs/tags/v${version}.tar.gz"
-            ;;
-        *)
-            echo "❌ 未知的库: $lib" >&2
-            return 1
-            ;;
-    esac
-}
 
 # ============================================
 # 工具链设置函数
