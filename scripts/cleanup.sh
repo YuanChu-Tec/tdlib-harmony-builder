@@ -29,7 +29,7 @@ echo ""
 
 if [[ "$KEEP_SRC" == "true" ]]; then
     echo "将清理: build/, install/, dist/, logs/, src/extracted/"
-    echo "保留:   src/downloads/ (下载目录)"
+    echo "保留:   src/downloads/ (下载目录永远不会被清理)"
     CLEAN_DIRS=(
         "$BUILD_DIR"
         "$INSTALL_DIR"
