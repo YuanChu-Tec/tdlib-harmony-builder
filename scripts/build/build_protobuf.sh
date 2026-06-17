@@ -194,48 +194,48 @@ fi
 # 添加 -D_POSIX_C_SOURCE 以启用 POSIX 函数（如 close）
 # 
 # 重要：HarmonyOS SDK 的 clang 15.0.4 在处理 protobuf 35.1 的某些 C++ 代码时可能崩溃
-# 因此使用 -O0 禁用优化来避免编译器段错误
+# 因此使用 -O1 而非 -O0/-O3 来平衡编译稳定性和性能
 # 注意：不要添加 -fno-exceptions 或 -fno-rtti，因为 protobuf 35.x 大量使用异常和 RTTI
 PROTOBUF_C_FLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L"
 PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -std=c++17"
 
-# 移除 -O3 并替换为 -O0（禁用优化以避免编译器崩溃）
-PROTOBUF_C_FLAGS=$(echo "$PROTOBUF_C_FLAGS" | sed 's/-O[0-9s]/-O0/g')
-PROTOBUF_CXX_FLAGS=$(echo "$PROTOBUF_CXX_FLAGS" | sed 's/-O[0-9s]/-O0/g')
+# 移除其它 -Ox 并替换为 -O1（使用 -O1 以避免 clang 15.0.4 的 -O0 段错误）
+PROTOBUF_C_FLAGS=$(echo "$PROTOBUF_C_FLAGS" | sed 's/-O[0-9s]/-O1/g')
+PROTOBUF_CXX_FLAGS=$(echo "$PROTOBUF_CXX_FLAGS" | sed 's/-O[0-9s]/-O1/g')
 
-# 如果替换失败，手动确保 -O0 存在
-if [[ "$PROTOBUF_C_FLAGS" != *"-O0"* ]]; then
-    PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -O0"
+# 如果替换失败，手动确保 -O1 存在
+if [[ "$PROTOBUF_C_FLAGS" != *"-O1"* ]]; then
+    PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -O1"
 fi
-if [[ "$PROTOBUF_CXX_FLAGS" != *"-O0"* ]]; then
-    PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -O0"
+if [[ "$PROTOBUF_CXX_FLAGS" != *"-O1"* ]]; then
+    PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -O1"
 fi
 
 # 添加额外的标志来避免 clang 15.0.4 段错误
 # -fno-strict-aliasing: 禁用严格别名规则
 PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -fno-strict-aliasing"
-PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -fno-strict-aliasing"
+PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -fno-strict-aliasing -Wno-unused-command-line-argument"
 
-# 自动检测 Abseil 安装路径
-ABSL_DIR=""
+# 自动检测 Abseil 安装路径（直接传递 -Dabsl_DIR，避免中间变量引号被 eval 吞掉）
+ABSL_CMAKE_DIR=""
 if [[ -d "$ARCH_INSTALL_DIR/lib/cmake/absl" ]]; then
-    ABSL_DIR="$ARCH_INSTALL_DIR/lib/cmake/absl"
+    ABSL_CMAKE_DIR="$ARCH_INSTALL_DIR/lib/cmake/absl"
 elif [[ -d "$ARCH_INSTALL_DIR/share/cmake/absl" ]]; then
-    ABSL_DIR="$ARCH_INSTALL_DIR/share/cmake/absl"
+    ABSL_CMAKE_DIR="$ARCH_INSTALL_DIR/share/cmake/absl"
 fi
-ABSL_CMAKE_ARGS=""
-if [[ -n "$ABSL_DIR" ]]; then
-    log_info "检测到 Abseil: $ABSL_DIR"
-    ABSL_CMAKE_ARGS="-Dabsl_DIR=\"$ABSL_DIR\""
+if [[ -n "$ABSL_CMAKE_DIR" ]]; then
+    log_info "检测到 Abseil: $ABSL_CMAKE_DIR"
 else
     log_warning "未检测到 Abseil 安装，protobuf 35.x 需要 Abseil 依赖"
     log_warning "请先编译安装 Abseil"
 fi
 
+# 注意：protobuf 35.x 已不识别 protobuf_ABSL_PROVIDER，
+# 直接通过 -Dabsl_DIR 指定路径即可
 run_command \
     "\"$CMAKE_CMD\" \"$SOURCE_DIR\" \
+        -G \"Ninja\" \
         -DCMAKE_TOOLCHAIN_FILE=\"$TOOLCHAIN_FILE\" \
-        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DOHOS_ARCH=\"$ARCH\" \
         -DOHOS_STL=c++_static \
         -DCMAKE_BUILD_TYPE=Release \
@@ -243,9 +243,9 @@ run_command \
         -DBUILD_SHARED_LIBS=OFF \
         -Dprotobuf_BUILD_TESTS=OFF \
         -Dprotobuf_BUILD_EXAMPLES=OFF \
-        -Dprotobuf_ABSL_PROVIDER=package \
         -Dprotobuf_INSTALL=ON \
-        $ABSL_CMAKE_ARGS \
+        -Dabsl_DIR=\"${ABSL_CMAKE_DIR}\" \
+        -DZLIB_ROOT=\"$ARCH_INSTALL_DIR\" \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_C_COMPILER=\"$CC\" \
         -DCMAKE_CXX_COMPILER=\"$CXX\" \
