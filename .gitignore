@@ -4,9 +4,9 @@ user_config.sh.backup.*
 
 # 构建产物
 /build/
-install/
-dist/
-src/extracted/
+/install/
+/dist/
+/src/extracted/
 
 # 日志文件
 logs/
