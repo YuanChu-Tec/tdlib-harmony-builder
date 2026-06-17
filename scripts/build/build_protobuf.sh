@@ -194,21 +194,22 @@ fi
 # 添加 -D_POSIX_C_SOURCE 以启用 POSIX 函数（如 close）
 # 
 # 重要：HarmonyOS SDK 的 clang 15.0.4 在处理 protobuf 35.1 的某些 C++ 代码时可能崩溃
-# 因此使用 -O1 而非 -O0/-O3 来平衡编译稳定性和性能
+# 因此使用 -Og 而非 -O0/-O1/-O3 来平衡编译稳定性和性能
+# -Og 生成更少的编译器内部临时值和转换，降低 clang SIGSEGV 概率
 # 注意：不要添加 -fno-exceptions 或 -fno-rtti，因为 protobuf 35.x 大量使用异常和 RTTI
 PROTOBUF_C_FLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L"
 PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -std=c++17"
 
-# 移除其它 -Ox 并替换为 -O1（使用 -O1 以避免 clang 15.0.4 的 -O0 段错误）
-PROTOBUF_C_FLAGS=$(echo "$PROTOBUF_C_FLAGS" | sed 's/-O[0-9s]/-O1/g')
-PROTOBUF_CXX_FLAGS=$(echo "$PROTOBUF_CXX_FLAGS" | sed 's/-O[0-9s]/-O1/g')
+# 移除其它 -Ox 并替换为 -Og（使用 -Og 以避免 clang 15.0.4 的段错误）
+PROTOBUF_C_FLAGS=$(echo "$PROTOBUF_C_FLAGS" | sed 's/-O[0-9s]/-Og/g')
+PROTOBUF_CXX_FLAGS=$(echo "$PROTOBUF_CXX_FLAGS" | sed 's/-O[0-9s]/-Og/g')
 
-# 如果替换失败，手动确保 -O1 存在
-if [[ "$PROTOBUF_C_FLAGS" != *"-O1"* ]]; then
-    PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -O1"
+# 如果替换失败，手动确保 -Og 存在
+if [[ "$PROTOBUF_C_FLAGS" != *"-Og"* ]]; then
+    PROTOBUF_C_FLAGS="${PROTOBUF_C_FLAGS} -Og"
 fi
-if [[ "$PROTOBUF_CXX_FLAGS" != *"-O1"* ]]; then
-    PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -O1"
+if [[ "$PROTOBUF_CXX_FLAGS" != *"-Og"* ]]; then
+    PROTOBUF_CXX_FLAGS="${PROTOBUF_CXX_FLAGS} -Og"
 fi
 
 # 添加额外的标志来避免 clang 15.0.4 段错误
@@ -282,7 +283,7 @@ fi
 # 编译（使用 cmake --build 以支持不同的生成器）
 log_step "编译 Protocol Buffers..."
 run_command \
-    "\"$CMAKE_CMD\" --build . --config Release -j${PARALLEL_JOBS}" \
+    "\"$CMAKE_CMD\" --build . --config Release -j4" \
     "${LOGS_DIR}/build/protobuf_${ARCH}_build.log" \
     "编译 Protocol Buffers"
 

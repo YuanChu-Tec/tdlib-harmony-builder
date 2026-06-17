@@ -53,24 +53,25 @@
 ▶ 开始编译: zlib
 ▶ 开始编译 zlib for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 21:58:35 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 21:58:35 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 21:58:35 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 21:58:35 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/zlib-1.3.2
-[INFO] 2026-06-17 21:58:35 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/zlib
+[INFO] 2026-06-17 22:16:12 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:16:12 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:16:12 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:16:12 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/zlib-1.3.2
+[INFO] 2026-06-17 22:16:12 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/zlib
 ▶ 配置 zlib...
-[INFO] 2026-06-17 21:58:35 - 配置 zlib
+[INFO] 2026-06-17 22:16:12 - 配置 zlib
+[INFO] 2026-06-17 22:16:12 - 创建目录: /home/yuanchu/tdlib-harmony-builder/logs/build
 ✅ 配置 zlib 完成
 ▶ 编译 zlib...
-[INFO] 2026-06-17 21:58:38 - 编译 zlib
+[INFO] 2026-06-17 22:16:15 - 编译 zlib
 ✅ 编译 zlib 完成
 ▶ 安装 zlib...
-[INFO] 2026-06-17 21:58:39 - 安装 zlib
+[INFO] 2026-06-17 22:16:16 - 安装 zlib
 ✅ 安装 zlib 完成
 ▶ 验证 zlib 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: zlib
-[INFO] 2026-06-17 21:58:39 -   ✅ 库文件: libz.a
-[INFO] 2026-06-17 21:58:39 -   ✅ 头文件目录: zlib.h
+[INFO] 2026-06-17 22:16:16 -   ✅ 库文件: libz.a
+[INFO] 2026-06-17 22:16:16 -   ✅ 头文件目录: zlib.h
 ✅ zlib 编译验证通过: arm64-v8a
 ✅ zlib 编译安装完成: arm64-v8a
 ✅ zlib 编译成功
@@ -78,26 +79,26 @@
 ▶ 开始编译: openssl
 ▶ 开始编译 OpenSSL for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 21:58:39 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 21:58:39 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 21:58:39 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 21:58:39 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/openssl-4.0.1
-[INFO] 2026-06-17 21:58:39 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/openssl
+[INFO] 2026-06-17 22:16:16 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:16:16 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:16:16 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:16:16 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/openssl-4.0.1
+[INFO] 2026-06-17 22:16:16 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/openssl
 ▶ 配置 OpenSSL...
-[INFO] 2026-06-17 21:58:39 - 配置 OpenSSL
+[INFO] 2026-06-17 22:16:16 - 配置 OpenSSL
 ✅ 配置 OpenSSL 完成
 ▶ 编译 OpenSSL...
-[INFO] 2026-06-17 21:58:44 - 编译 OpenSSL
+[INFO] 2026-06-17 22:16:21 - 编译 OpenSSL
 ✅ 编译 OpenSSL 完成
 ▶ 安装 OpenSSL...
-[INFO] 2026-06-17 21:58:56 - 安装 OpenSSL
+[INFO] 2026-06-17 22:16:33 - 安装 OpenSSL
 ✅ 安装 OpenSSL 完成
 ▶ 验证 openssl 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: openssl
-[INFO] 2026-06-17 21:58:57 -   ✅ 库文件: libssl.a
+[INFO] 2026-06-17 22:16:34 -   ✅ 库文件: libssl.a
 ✅ 验证成功: openssl
-[INFO] 2026-06-17 21:58:57 -   ✅ 库文件: libcrypto.a
-[INFO] 2026-06-17 21:58:57 -   ✅ 头文件目录: openssl
+[INFO] 2026-06-17 22:16:34 -   ✅ 库文件: libcrypto.a
+[INFO] 2026-06-17 22:16:34 -   ✅ 头文件目录: openssl
 ✅ openssl 编译验证通过: arm64-v8a
 ✅ OpenSSL 编译安装完成: arm64-v8a
 ✅ openssl 编译成功
@@ -105,24 +106,24 @@
 ▶ 开始编译: sqlite
 ▶ 开始编译 SQLite for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 21:58:57 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 21:58:57 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 21:58:57 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 21:58:57 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/sqlite-autoconf-3530200
-[INFO] 2026-06-17 21:58:57 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/sqlite
+[INFO] 2026-06-17 22:16:34 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:16:34 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:16:34 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:16:34 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/sqlite-autoconf-3530200
+[INFO] 2026-06-17 22:16:34 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/sqlite
 ▶ 配置 SQLite...
-[INFO] 2026-06-17 21:58:57 - 配置 SQLite
+[INFO] 2026-06-17 22:16:34 - 配置 SQLite
 ✅ 配置 SQLite 完成
 ▶ 编译 SQLite...
-[INFO] 2026-06-17 21:59:02 - 编译 SQLite
+[INFO] 2026-06-17 22:16:39 - 编译 SQLite
 ✅ 编译 SQLite 完成
 ▶ 安装 SQLite...
-[INFO] 2026-06-17 21:59:22 - 安装 SQLite
+[INFO] 2026-06-17 22:16:59 - 安装 SQLite
 ✅ 安装 SQLite 完成
 ▶ 验证 sqlite 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: sqlite
-[INFO] 2026-06-17 21:59:22 -   ✅ 库文件: libsqlite3.a
-[INFO] 2026-06-17 21:59:22 -   ✅ 头文件目录: sqlite3.h
+[INFO] 2026-06-17 22:16:59 -   ✅ 库文件: libsqlite3.a
+[INFO] 2026-06-17 22:16:59 -   ✅ 头文件目录: sqlite3.h
 ✅ sqlite 编译验证通过: arm64-v8a
 ✅ SQLite 编译安装完成: arm64-v8a
 ✅ sqlite 编译成功
@@ -130,42 +131,42 @@
 ▶ 开始编译: icu
 ▶ 开始编译 ICU for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 21:59:22 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 21:59:22 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 21:59:22 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 21:59:22 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/icu/source
+[INFO] 2026-06-17 22:16:59 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:16:59 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:16:59 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:16:59 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/icu/source
 ▶ 编译主机工具...
-[INFO] 2026-06-17 21:59:22 - 配置 ICU 主机工具
+[INFO] 2026-06-17 22:16:59 - 配置 ICU 主机工具
 ✅ 配置 ICU 主机工具 完成
-[INFO] 2026-06-17 21:59:27 - 初次构建 ICU 主机库和工具（允许失败）...
-[INFO] 2026-06-17 21:59:27 - 初次构建 ICU 主机库和工具（允许失败）
+[INFO] 2026-06-17 22:17:03 - 初次构建 ICU 主机库和工具（允许失败）...
+[INFO] 2026-06-17 22:17:03 - 初次构建 ICU 主机库和工具（允许失败）
 ✅ 初次构建 ICU 主机库和工具（允许失败） 完成
-[INFO] 2026-06-17 21:59:50 - 创建 ICU 库兼容名称（用于工具链接）...
-[INFO] 2026-06-17 21:59:50 - 构建 ICU 主机工具...
-[INFO] 2026-06-17 21:59:50 - 编译 ICU 主机工具
+[INFO] 2026-06-17 22:17:26 - 创建 ICU 库兼容名称（用于工具链接）...
+[INFO] 2026-06-17 22:17:26 - 构建 ICU 主机工具...
+[INFO] 2026-06-17 22:17:26 - 编译 ICU 主机工具
 ✅ 编译 ICU 主机工具 完成
-[INFO] 2026-06-17 21:59:50 - 安装 ICU 主机工具...
+[INFO] 2026-06-17 22:17:26 - 安装 ICU 主机工具...
 ✅ 安装 ICU 主机工具 完成
-[INFO] 2026-06-17 21:59:51 - 已将 ICU 主机工具目录添加到 PATH: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/icu-host/bin
-[INFO] 2026-06-17 21:59:51 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/icu
+[INFO] 2026-06-17 22:17:28 - 已将 ICU 主机工具目录添加到 PATH: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/icu-host/bin
+[INFO] 2026-06-17 22:17:28 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/icu
 ▶ 配置 ICU 交叉编译...
-[INFO] 2026-06-17 21:59:51 - 配置 ICU 交叉编译
+[INFO] 2026-06-17 22:17:28 - 配置 ICU 交叉编译
 ✅ 配置 ICU 交叉编译 完成
-[INFO] 2026-06-17 22:00:00 - 已将 ICU 主机工具目录添加到 PATH: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/icu-host/bin
+[INFO] 2026-06-17 22:17:36 - 已将 ICU 主机工具目录添加到 PATH: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/icu-host/bin
 ▶ 编译 ICU...
-[INFO] 2026-06-17 22:00:00 - 编译 ICU
+[INFO] 2026-06-17 22:17:36 - 编译 ICU
 ✅ 编译 ICU 完成
 ▶ 安装 ICU...
-[INFO] 2026-06-17 22:00:40 - 安装 ICU
+[INFO] 2026-06-17 22:18:16 - 安装 ICU
 ✅ 安装 ICU 完成
 ▶ 验证 icu 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: icu
-[INFO] 2026-06-17 22:00:41 -   ✅ 库文件: libicuuc.a
+[INFO] 2026-06-17 22:18:17 -   ✅ 库文件: libicuuc.a
 ✅ 验证成功: icu
-[INFO] 2026-06-17 22:00:41 -   ✅ 库文件: libicudata.a
+[INFO] 2026-06-17 22:18:17 -   ✅ 库文件: libicudata.a
 ✅ 验证成功: icu
-[INFO] 2026-06-17 22:00:41 -   ✅ 库文件: libicui18n.a
-[INFO] 2026-06-17 22:00:41 -   ✅ 头文件目录: unicode
+[INFO] 2026-06-17 22:18:17 -   ✅ 库文件: libicui18n.a
+[INFO] 2026-06-17 22:18:17 -   ✅ 头文件目录: unicode
 ✅ icu 编译验证通过: arm64-v8a
 ✅ ICU 编译安装完成: arm64-v8a
 ✅ icu 编译成功
@@ -173,24 +174,24 @@
 ▶ 开始编译: crc32c
 ▶ 开始编译 crc32c for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 22:00:41 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 22:00:41 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 22:00:41 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 22:00:41 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/crc32c-main
-[INFO] 2026-06-17 22:00:41 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/crc32c
+[INFO] 2026-06-17 22:18:17 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:18:17 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:18:17 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:18:17 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/crc32c-main
+[INFO] 2026-06-17 22:18:17 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/crc32c
 ▶ 配置 crc32c...
-[INFO] 2026-06-17 22:00:41 - 配置 crc32c
+[INFO] 2026-06-17 22:18:17 - 配置 crc32c
 ✅ 配置 crc32c 完成
 ▶ 编译 crc32c...
-[INFO] 2026-06-17 22:00:47 - 编译 crc32c
+[INFO] 2026-06-17 22:18:24 - 编译 crc32c
 ✅ 编译 crc32c 完成
 ▶ 安装 crc32c...
-[INFO] 2026-06-17 22:00:48 - 安装 crc32c
+[INFO] 2026-06-17 22:18:25 - 安装 crc32c
 ✅ 安装 crc32c 完成
 ▶ 验证 crc32c 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: crc32c
-[INFO] 2026-06-17 22:00:48 -   ✅ 库文件: libcrc32c.a
-[INFO] 2026-06-17 22:00:48 -   ✅ 头文件目录: crc32c
+[INFO] 2026-06-17 22:18:25 -   ✅ 库文件: libcrc32c.a
+[INFO] 2026-06-17 22:18:25 -   ✅ 头文件目录: crc32c
 ✅ crc32c 编译验证通过: arm64-v8a
 ✅ crc32c 编译安装完成: arm64-v8a
 ✅ crc32c 编译成功
@@ -198,24 +199,24 @@
 ▶ 开始编译: xxhash
 ▶ 开始编译 xxHash for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 22:00:48 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 22:00:48 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 22:00:48 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 22:00:48 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/xxHash-0.8.3
-[INFO] 2026-06-17 22:00:48 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/xxhash
+[INFO] 2026-06-17 22:18:25 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:18:25 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:18:25 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:18:25 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/xxHash-0.8.3
+[INFO] 2026-06-17 22:18:25 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/xxhash
 ▶ 配置 xxHash...
 ▶ 编译 xxHash (Makefile)...
-[INFO] 2026-06-17 22:00:48 - 编译 xxHash
+[INFO] 2026-06-17 22:18:25 - 编译 xxHash
 ✅ 编译 xxHash 完成
-[INFO] 2026-06-17 22:00:48 - 尝试直接编译库文件...
-[INFO] 2026-06-17 22:00:48 - 编译 xxHash (直接方法)
+[INFO] 2026-06-17 22:18:25 - 尝试直接编译库文件...
+[INFO] 2026-06-17 22:18:25 - 编译 xxHash (直接方法)
 ✅ 编译 xxHash (直接方法) 完成
 ▶ 安装 xxHash...
 ✅ xxHash 安装完成
 ▶ 验证 xxhash 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: xxhash
-[INFO] 2026-06-17 22:00:49 -   ✅ 库文件: libxxhash.a
-[INFO] 2026-06-17 22:00:49 -   ✅ 头文件目录: xxhash.h
+[INFO] 2026-06-17 22:18:25 -   ✅ 库文件: libxxhash.a
+[INFO] 2026-06-17 22:18:25 -   ✅ 头文件目录: xxhash.h
 ✅ xxhash 编译验证通过: arm64-v8a
 ✅ xxHash 编译安装完成: arm64-v8a
 ✅ xxhash 编译成功
@@ -223,25 +224,25 @@
 ▶ 开始编译: abseil
 ▶ 开始编译 Abseil for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 22:00:49 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 22:00:49 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 22:00:49 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 22:00:49 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/abseil-cpp-20260526.0
-[INFO] 2026-06-17 22:00:49 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/abseil
-[INFO] 2026-06-17 22:00:49 - 清理 CMake 缓存: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/abseil
+[INFO] 2026-06-17 22:18:25 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:18:25 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:18:25 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:18:25 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/abseil-cpp-20260526.0
+[INFO] 2026-06-17 22:18:25 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/abseil
+[INFO] 2026-06-17 22:18:25 - 清理 CMake 缓存: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/abseil
 ▶ 配置 Abseil...
-[INFO] 2026-06-17 22:00:49 - 配置 Abseil
+[INFO] 2026-06-17 22:18:25 - 配置 Abseil
 ✅ 配置 Abseil 完成
 ▶ 编译 Abseil...
-[INFO] 2026-06-17 22:00:53 - 编译 Abseil
+[INFO] 2026-06-17 22:18:30 - 编译 Abseil
 ✅ 编译 Abseil 完成
 ▶ 安装 Abseil...
-[INFO] 2026-06-17 22:01:02 - 安装 Abseil
+[INFO] 2026-06-17 22:18:38 - 安装 Abseil
 ✅ 安装 Abseil 完成
 ▶ 验证 abseil 编译结果 (架构: arm64-v8a)...
 ✅ 验证成功: abseil
-[INFO] 2026-06-17 22:01:02 -   ✅ 库文件: libabsl_strings.a
-[INFO] 2026-06-17 22:01:02 -   ✅ 头文件目录: absl
+[INFO] 2026-06-17 22:18:38 -   ✅ 库文件: libabsl_strings.a
+[INFO] 2026-06-17 22:18:38 -   ✅ 头文件目录: absl
 ✅ abseil 编译验证通过: arm64-v8a
 ✅ Abseil 编译安装完成: arm64-v8a
 ✅ abseil 编译成功
@@ -249,30 +250,50 @@
 ▶ 开始编译: protobuf
 ▶ 开始编译 Protocol Buffers for arm64-v8a
 ✅ 已加载用户配置文件: /home/yuanchu/tdlib-harmony-builder/user_config.sh
-[INFO] 2026-06-17 22:01:02 - 编译环境设置完成: arm64-v8a
-[INFO] 2026-06-17 22:01:02 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
-[INFO] 2026-06-17 22:01:02 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
-[INFO] 2026-06-17 22:01:02 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/protobuf-35.1
+[INFO] 2026-06-17 22:18:38 - 编译环境设置完成: arm64-v8a
+[INFO] 2026-06-17 22:18:38 - CC: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang
+[INFO] 2026-06-17 22:18:38 - CXX: /home/yuanchu/ohos-sdk/linux/native/llvm/bin/aarch64-unknown-linux-ohos-clang++
+[INFO] 2026-06-17 22:18:38 - 源码目录: /home/yuanchu/tdlib-harmony-builder/src/extracted/protobuf-35.1
 ▶ 构建主机版本的 protoc...
-[INFO] 2026-06-17 22:01:02 - 配置主机 protoc (CMake)
+[INFO] 2026-06-17 22:18:38 - 配置主机 protoc (CMake)
 ✅ 配置主机 protoc (CMake) 完成
-[INFO] 2026-06-17 22:01:15 - 编译主机 protoc
+[INFO] 2026-06-17 22:18:57 - 编译主机 protoc
 ✅ 编译主机 protoc 完成
-[INFO] 2026-06-17 22:02:19 - 主机 protoc 路径: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/protobuf-host/protoc
-[INFO] 2026-06-17 22:02:19 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/protobuf
+[INFO] 2026-06-17 22:19:59 - 主机 protoc 路径: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/protobuf-host/protoc
+[INFO] 2026-06-17 22:19:59 - 创建目录: /home/yuanchu/tdlib-harmony-builder/build/arm64-v8a/protobuf
 ▶ 配置 Protocol Buffers...
-[INFO] 2026-06-17 22:02:19 - 检测到 Abseil: /home/yuanchu/tdlib-harmony-builder/install/arm64-v8a/lib/cmake/absl
-[INFO] 2026-06-17 22:02:19 - 配置 Protocol Buffers
+[INFO] 2026-06-17 22:19:59 - 检测到 Abseil: /home/yuanchu/tdlib-harmony-builder/install/arm64-v8a/lib/cmake/absl
+[INFO] 2026-06-17 22:19:59 - 配置 Protocol Buffers
 ✅ 配置 Protocol Buffers 完成
 ▶ 修复 HarmonyOS 兼容性问题...
-[INFO] 2026-06-17 22:02:25 - 发现以下文件包含 posix_close 调用:
+[INFO] 2026-06-17 22:20:05 - 发现以下文件包含 posix_close 调用:
 /home/yuanchu/tdlib-harmony-builder/src/extracted/protobuf-35.1/src/google/protobuf/io/zero_copy_stream_impl.cc
-[INFO] 2026-06-17 22:02:25 - 修复: /home/yuanchu/tdlib-harmony-builder/src/extracted/protobuf-35.1/src/google/protobuf/io/zero_copy_stream_impl.cc
+[INFO] 2026-06-17 22:20:05 - 修复: /home/yuanchu/tdlib-harmony-builder/src/extracted/protobuf-35.1/src/google/protobuf/io/zero_copy_stream_impl.cc
 ✅ HarmonyOS 兼容性修复完成
 ▶ 编译 Protocol Buffers...
-[INFO] 2026-06-17 22:02:25 - 编译 Protocol Buffers
-[ERROR] 2026-06-17 22:02:29 - 编译 Protocol Buffers 失败，查看日志: /home/yuanchu/tdlib-harmony-builder/logs/build/protobuf_arm64-v8a_build.log
-[ERROR] 2026-06-17 22:02:29 - Protocol Buffers 编译失败
-[ERROR] 2026-06-17 22:02:29 - protobuf 编译失败
+[INFO] 2026-06-17 22:20:05 - 编译 Protocol Buffers
+[ERROR] 2026-06-17 22:20:08 - 编译 Protocol Buffers 失败，查看日志: /home/yuanchu/tdlib-harmony-builder/logs/build/protobuf_arm64-v8a_build.log
+[ERROR] 2026-06-17 22:20:08 - Protocol Buffers 编译失败
+[ERROR] 2026-06-17 22:20:08 - protobuf 编译失败
 
-❌ protobuf 编译失败
+❌ protobuf 编译失败，是否继续编译其他库？ [Y/n]: n
+[INFO] 2026-06-17 22:20:40 - 用户选择停止编译
+▶ ========================================
+▶ 编译完成总结:
+
+✅ 成功编译的库 (7个):
+  • zlib
+  • openssl
+  • sqlite
+  • icu
+  • crc32c
+  • xxhash
+  • abseil
+
+❌ 编译失败的库 (1个):
+  • protobuf
+
+💡 修复建议:
+  1. 查看详细日志: /home/yuanchu/tdlib-harmony-builder/logs/build/
+  2. 尝试单独编译失败的库: ./scripts/build/build_<库名>.sh arm64-v8a
+  3. 检查依赖关系和环境变量
