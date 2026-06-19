@@ -89,7 +89,7 @@ log_step "编译 OpenSSL..."
 # 或者使用编译器内置的原子操作支持
 if [[ "$ARCH" == "armeabi-v7a" ]]; then
     # 检查 sysroot 中是否有 libatomic
-    local atomic_lib=""
+    atomic_lib=""
     if [[ -f "${SYSROOT}/usr/lib/libatomic.a" ]]; then
         atomic_lib="${SYSROOT}/usr/lib/libatomic.a"
     elif [[ -f "${SYSROOT}/lib/libatomic.a" ]]; then
@@ -130,6 +130,19 @@ run_command \
 if [[ $? -ne 0 ]]; then
     log_error "OpenSSL 安装失败"
     exit 1
+fi
+
+# x86_64 架构下 OpenSSL 的 Configure 脚本默认使用 lib64 作为库安装目录
+# 但其他依赖库和 CMake 查找路径都使用 lib/，
+# 因此需要将 lib64 下的库复制到 lib/ 以保持一致性
+if [[ "$ARCH" == "x86_64" ]] && [[ -d "${ARCH_INSTALL_DIR}/lib64" ]]; then
+    log_info "检测到 lib64 目录，复制 OpenSSL 库到 lib/ 目录"
+    for f in libssl.a libcrypto.a; do
+        if [[ -f "${ARCH_INSTALL_DIR}/lib64/$f" ]] && [[ ! -f "${ARCH_INSTALL_DIR}/lib/$f" ]]; then
+            cp "${ARCH_INSTALL_DIR}/lib64/$f" "${ARCH_INSTALL_DIR}/lib/$f"
+            log_info "复制: $f"
+        fi
+    done
 fi
 
 # 编译后验证

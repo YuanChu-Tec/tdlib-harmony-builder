@@ -81,10 +81,10 @@ if [[ -f "$USER_CONFIG_FILE" ]]; then
     fi
 else
     # 如果用户配置文件不存在，提示用户
-    if [[ -f "${CONFIG_SCRIPT_DIR}/user_config.sh.example" ]]; then
-        echo "ℹ️  提示: 未找到用户配置文件 user_config.sh"
-        echo "   可以复制 user_config.sh.example 为 user_config.sh 并修改配置"
-        echo "   cp user_config.sh.example user_config.sh"
+    if [[ ! -f "${CONFIG_SCRIPT_DIR}/user_config.sh" ]]; then
+        echo -e "${YELLOW}  提示: 用户配置文件 user_config.sh 不存在${NC}"
+        echo "   可以运行 builder.sh 通过配置菜单生成:"
+        echo "   ./builder.sh  →  主菜单选 5 (配置管理)  →  配置后选 9 保存"
     fi
 fi
 
@@ -242,7 +242,7 @@ export LIBEVENT_VERSION_DEFAULT="2.1.12"
 export LZ4_VERSION_DEFAULT="1.9.4"
 export SNAPPY_VERSION_DEFAULT="1.1.9"
 export DOUBLE_CONVERSION_VERSION_DEFAULT="3.2.1"
-export TDLIB_VERSION_DEFAULT="1.8.0"
+export TDLIB_VERSION_DEFAULT="1.8.65"
 
 # 初始化版本变量（将在获取最新版本后更新）
 export OPENSSL_VERSION="${OPENSSL_VERSION:-$OPENSSL_VERSION_DEFAULT}"

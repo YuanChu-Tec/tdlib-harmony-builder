@@ -105,8 +105,11 @@ apply_harmony_patches() {
   local pthread_cpp="$src/tdutils/td/utils/port/detail/ThreadPthread.cpp"
   if [[ -f "$pthread_cpp" ]] && ! grep -q "defined(TD_HARMONYOS)" "$pthread_cpp" 2>/dev/null; then
     log_info "应用线程亲和补丁到 ThreadPthread.cpp..."
-    # 添加头文件
-    sed -i '/#if TD_FREEBSD || TD_OPENBSD || TD_NETBSD/a\#if defined(TD_HARMONYOS)\n#include <sys/syscall.h>\n#include <unistd.h>\n#endif' "$pthread_cpp"
+    # 添加头文件（在文件顶部第一个 #include 行之后插入）
+    sed -i '0,/^#include/ s|^#include|#include <sys/syscall.h>\n#include <unistd.h>\n#include|' "$pthread_cpp"
+    # 替换 pthread_setaffinity_np -> sched_setaffinity（HarmonyOS musl 不支持 pthread 线程亲和函数）
+    sed -i 's/pthread_setaffinity_np(\([^)]*\))/sched_setaffinity(static_cast<pid_t>(\1))/g' "$pthread_cpp"
+    sed -i 's/pthread_getaffinity_np(\([^)]*\))/sched_getaffinity(static_cast<pid_t>(\1))/g' "$pthread_cpp"
     patched=true
   fi
   
@@ -115,7 +118,8 @@ apply_harmony_patches() {
   if [[ -f "$eventfd_h" ]] && ! grep -q "EventFdPipe" "$eventfd_h" 2>/dev/null; then
     log_info "应用 EventFdPipe 补丁到 EventFd.h..."
     sed -i '/#include "td\/utils\/port\/detail\/EventFdLinux.h"/a\#include "td/utils/port/detail/EventFdPipe.h"' "$eventfd_h"
-    sed -i '/#if TD_EVENTFD_LINUX/a\#if defined(TD_EVENTFD_PIPE)\n  using EventFd = detail::EventFdPipe;\n#elif' "$eventfd_h"
+    # 替换 `#if TD_EVENTFD_LINUX` 为三态条件：先检查 TD_EVENTFD_PIPE，再回退到 TD_EVENTFD_LINUX
+    sed -i 's|#if TD_EVENTFD_LINUX|#if defined(TD_EVENTFD_PIPE)\n  using EventFd = detail::EventFdPipe;\n#elif TD_EVENTFD_LINUX|' "$eventfd_h"
     patched=true
   fi
   

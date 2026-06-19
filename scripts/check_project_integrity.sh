@@ -17,7 +17,6 @@ log_info "检查必需文件..."
 
 REQUIRED_FILES=(
     "config.sh"
-    "user_config.sh.example"
     "builder.sh"
     "scripts/common.sh"
     "scripts/download_sources.sh"

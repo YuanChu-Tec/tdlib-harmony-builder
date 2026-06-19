@@ -8,26 +8,25 @@
 
 ### 1. 创建配置文件
 
-有两种方式创建配置文件：
-
-#### 方式1: 使用初始化脚本（推荐）
+运行 `builder.sh` 配置菜单创建配置文件：
 
 ```bash
-./scripts/init_config.sh
+./builder.sh
 ```
 
-脚本会：
-- 自动创建 `user_config.sh`
-- 尝试自动检测 HarmonyOS NDK 路径
-- 自动检测 CPU 核心数并建议并行任务数
-- 提供交互式配置
+在主菜单中选择 **5** 进入配置菜单，然后：
+- **1**: 设置 NDK 路径
+- **2**: 设置 API 级别
+- **3**: 设置 TDLib 源码版本
+- **4**: 设置 HarmonyOS 适配版本
+- **5**: 设置目标架构（多选）
+- **6**: 设置构建模式
+- **7**: 设置并行任务数
+- **8**: 查看当前配置
+- **9**: 保存配置到 `user_config.sh`
+- **0**: 返回（不保存）
 
-#### 方式2: 手动创建
-
-```bash
-cp user_config.sh.example user_config.sh
-# 然后编辑 user_config.sh
-```
+配置保存后，`user_config.sh` 会自动生成在项目根目录。你也可以直接编辑 `user_config.sh` 进行手动修改。
 
 ### 2. 编辑配置文件
 

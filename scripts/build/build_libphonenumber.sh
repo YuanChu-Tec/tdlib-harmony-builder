@@ -38,7 +38,7 @@ PATCH_APPLIED=false
 log_info "修复 libphonenumber 源文件以兼容 RE2..."
 
 # 修复 regexp_adapter_re2.cc
-REGEXP_RE2_FILE="$SOURCE_DIR/cpp/src/phonenumbers/regexp_adapter_re2.cc"
+REGEXP_RE2_FILE="$SOURCE_DIR/src/phonenumbers/regexp_adapter_re2.cc"
 if [[ -f "$REGEXP_RE2_FILE" ]]; then
     # 检查是否已经修复
     if ! grep -q "using StringPiece = re2::StringPiece;" "$REGEXP_RE2_FILE" 2>/dev/null; then
@@ -70,7 +70,7 @@ using StringPiece = re2::StringPiece;
 fi
 
 # 修复 string_byte_sink.h
-STRING_BYTE_SINK_FILE="$SOURCE_DIR/cpp/src/phonenumbers/string_byte_sink.h"
+STRING_BYTE_SINK_FILE="$SOURCE_DIR/src/phonenumbers/string_byte_sink.h"
 if [[ -f "$STRING_BYTE_SINK_FILE" ]]; then
     # 检查是否已经包含 bytestream.h
     if ! grep -q "#include <unicode/bytestream.h>" "$STRING_BYTE_SINK_FILE" 2>/dev/null; then

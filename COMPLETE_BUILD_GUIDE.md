@@ -61,15 +61,27 @@ cd tdlib-harmony-builder
 cd tdlib-harmony-builder
 ```
 
-### 步骤 2: 创建用户配置文件
+### 步骤 2: 配置构建选项
+
+运行 `./builder.sh` 进入配置菜单进行设置。首次运行时会自动检测 NDK 路径并引导进入配置。
 
 ```bash
-# 方式 1: 使用初始化脚本（推荐）
-./scripts/init_config.sh
-
-# 方式 2: 手动创建
-cp user_config.sh.example user_config.sh
+./builder.sh
 ```
+
+在主菜单中选择 **5** 进入配置菜单，按需设置：
+- **1**: 设置 NDK 路径
+- **2**: 设置 API 级别
+- **3**: 设置 TDLib 源码版本
+- **4**: 设置 HarmonyOS 适配版本
+- **5**: 设置目标架构（多选）
+- **6**: 设置构建模式
+- **7**: 设置并行任务数
+- **8**: 查看当前配置
+- **9**: 保存配置到 `user_config.sh`
+- **0**: 返回（不保存）
+
+配置保存后，`user_config.sh` 会自动生成在项目根目录。
 
 ### 步骤 3: 配置 HarmonyOS NDK 路径
 
@@ -126,8 +138,7 @@ source config.sh && validate_config
 ```
 tdlib-harmony-builder/
 ├── config.sh                    # 主配置文件
-├── user_config.sh               # 用户配置文件（需创建）
-├── user_config.sh.example      # 配置模板
+├── user_config.sh               # 用户配置（由 builder.sh 配置菜单生成）
 ├── builder.sh                   # 主构建脚本
 │
 ├── scripts/                     # 脚本目录

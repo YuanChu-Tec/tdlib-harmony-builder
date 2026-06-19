@@ -95,6 +95,11 @@ cat > "$PACKAGE_DIR/tdlib-config.cmake" << EOF
 # TDLib for HarmonyOS 配置文件
 # 自动生成于: $(date)
 
+# TDLib 源版本（实际 TDLib 源码版本）
+set(TDLIB_SOURCE_VERSION "${TDLIB_VERSION}")
+# TDLib HarmonyOS 打包版本（包含 HarmonyOS 适配标记）
+set(TDLIB_PACKAGE_VERSION "${PROJECT_VERSION}")
+# 向后兼容
 set(TDLIB_VERSION "${PROJECT_VERSION}")
 set(TDLIB_HARMONYOS_API_LEVEL "${OHOS_API_LEVEL}")
 
@@ -108,42 +113,58 @@ set(TDLIB_LIBRARY_DIRS "\${CMAKE_CURRENT_LIST_DIR}/libs/\${OHOS_ARCH_ABI}")
 
 # 导出变量
 set(TDLIB_FOUND TRUE)
-message(STATUS "Found TDLib for HarmonyOS: \${TDLIB_VERSION}")
+message(STATUS "Found TDLib for HarmonyOS: v\${TDLIB_PACKAGE_VERSION} (TDLib source v\${TDLIB_SOURCE_VERSION})")
 
-# 添加链接库
+# TDLib 内部库（按依赖顺序）
+set(_TDLIB_LIBS
+    tdjson
+    tdjson_static
+    tdjson_private
+    tdclient
+    tdcore
+    tdapi
+    tdactor
+    tdnet
+    tdutils
+    tdmtproto
+    tddb
+    tdsqlite
+    tde2e
+    ssl
+    crypto
+    z
+    sqlite3
+    icuuc
+    icudata
+    icui18n
+    protobuf
+    protobuf-lite
+    re2
+    crc32c
+    xxhash
+    event
+    event_core
+    event_extra
+    event_pthreads
+    lz4
+    snappy
+    double-conversion
+    phonenumber
+)
+
+# 创建导入目标（与 FindTDLib.cmake 一致）
+if(NOT TARGET TDLib::TDLib)
+    add_library(TDLib::TDLib INTERFACE IMPORTED)
+    set_target_properties(TDLib::TDLib PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "\${TDLIB_INCLUDE_DIRS}"
+        INTERFACE_LINK_DIRECTORIES "\${TDLIB_LIBRARY_DIRS}"
+        INTERFACE_LINK_LIBRARIES "\${_TDLIB_LIBS}"
+    )
+endif()
+
+# 兼容旧的函数调用方式
 function(tdlib_target_link_libraries TARGET)
-    target_include_directories(\${TARGET} PRIVATE \${TDLIB_INCLUDE_DIRS})
-    target_link_directories(\${TARGET} PRIVATE \${TDLIB_LIBRARY_DIRS})
-    
-    # TDLib 主库
-    target_link_libraries(\${TARGET}
-        tdjson
-        tdjson_static
-        tdclient
-        tdcore
-    )
-    
-    # 依赖库
-    target_link_libraries(\${TARGET}
-        ssl
-        crypto
-        z
-        sqlite3
-        icuuc
-        icudata
-        protobuf
-        re2
-        crc32c
-        xxhash
-        event
-        event_core
-        event_extra
-        event_pthreads
-        lz4
-        snappy
-        double-conversion
-        phonenumber
-    )
+    target_link_libraries(\${TARGET} TDLib::TDLib)
 endfunction()
 EOF
 
@@ -153,7 +174,8 @@ cat > "$PACKAGE_DIR/README.md" << EOF
 # TDLib for HarmonyOS
 
 ## 版本信息
-- TDLib版本: ${TDLIB_VERSION}
+- TDLib源版本: ${TDLIB_VERSION}
+- HarmonyOS适配版本: ${PROJECT_VERSION}
 - HarmonyOS API级别: ${OHOS_API_LEVEL}
 - 构建日期: ${BUILD_DATE}
 - 包含架构: ${ARCHITECTURES[*]}
@@ -173,25 +195,39 @@ cat > "$PACKAGE_DIR/README.md" << EOF
 
 ### CMake项目
 \`\`\`cmake
-# 在CMakeLists.txt中添加
-set(CMAKE_PREFIX_PATH "\${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/tdlib-harmonyos")
+# 方法1: 使用 find_package(tdlib)（配置模式）
+list(APPEND CMAKE_PREFIX_PATH "\${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/tdlib-harmonyos")
+
+# 方法2: 使用 find_package(TDLib)（模块模式）
+list(APPEND CMAKE_MODULE_PATH "\${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/tdlib-harmonyos/cmake")
+
+# 设置目标架构（必须）
+set(OHOS_ARCH_ABI "arm64-v8a")  # 可选: arm64-v8a, armeabi-v7a, x86_64
+
 find_package(tdlib REQUIRED)
 
-# 链接到你的目标
-tdlib_target_link_libraries(your_target)
+# 链接到你的目标（两种方式任选）
+target_link_libraries(your_target TDLib::TDLib)        # 推荐方式
+# tdlib_target_link_libraries(your_target)              # 兼容方式
 \`\`\`
 
 ### 手动使用
 \`\`\`bash
 # 设置环境变量
+export OHOS_ARCH_ABI=arm64-v8a  # 可选: arm64-v8a, armeabi-v7a, x86_64
 export C_INCLUDE_PATH="\${TDLIB_PATH}/include:\${C_INCLUDE_PATH}"
 export CPLUS_INCLUDE_PATH="\${TDLIB_PATH}/include:\${CPLUS_INCLUDE_PATH}"
 export LIBRARY_PATH="\${TDLIB_PATH}/libs/\${OHOS_ARCH_ABI}:\${LIBRARY_PATH}"
 
 # 编译
-clang++ -std=c++17 -I\${TDLIB_PATH}/include -L\${TDLIB_PATH}/libs/arm64-v8a \\
-    -ltdjson -ltdclient -lssl -lcrypto -lsqlite3 \\
-    your_app.cpp -o your_app
+clang++ -std=c++17 -I\${TDLIB_PATH}/include -L\${TDLIB_PATH}/libs/\${OHOS_ARCH_ABI} \\
+    your_app.cpp -o your_app \\
+    -ltdjson -ltdclient -ltdcore -ltdapi \\
+    -lssl -lcrypto -lsqlite3 -lprotobuf \\
+    -licuuc -licudata -licui18n \\
+    -levent -levent_pthreads \\
+    -lre2 -lcrc32c -lxxhash -llz4 -lsnappy \\
+    -ldouble-conversion -lphonenumber
 \`\`\`
 
 ## 许可证

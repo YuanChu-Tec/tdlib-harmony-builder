@@ -10,21 +10,18 @@
 
 ## 📁 配置文件说明
 
-### 1. user_config.sh.example
-**用途**: 用户配置模板文件
+### 1. user_config.sh
+**用途**: 用户实际使用的配置文件
 
 **位置**: 项目根目录
 
-**说明**: 
-- 包含所有可配置项的详细说明
-- 提供默认值和示例
-- 用户可以复制此文件创建自己的配置
+**说明**:
+- 由用户创建和编辑
+- 包含用户的个人路径和配置
+- **不会被提交到版本控制**（已在 .gitignore 中）
+- 由 `builder.sh` 配置菜单自动生成，也可手动编辑
 
-**使用**:
-```bash
-cp user_config.sh.example user_config.sh
-# 然后编辑 user_config.sh
-```
+**创建方式**: 运行 `./builder.sh`，在主菜单选择 **5** 进入配置菜单，设置完成后选 **9** 保存。
 
 ### 2. user_config.sh
 **用途**: 用户实际使用的配置文件
@@ -42,7 +39,8 @@ cp user_config.sh.example user_config.sh
 ./scripts/init_config.sh
 
 # 方式2: 手动复制
-cp user_config.sh.example user_config.sh
+# 由 builder.sh 配置菜单自动生成
+./builder.sh  # 主菜单 → 5. 配置管理 → 配置后选 9 保存
 ```
 
 ### 3. config.sh
@@ -141,7 +139,7 @@ export ARCHITECTURES="arm64-v8a"
 ```
 
 ### 完整配置
-查看 `user_config.sh.example` 获取完整示例。
+运行 `builder.sh` → 主菜单 → 5. 配置管理 → 查看当前配置。
 
 ## ✅ 最佳实践
 

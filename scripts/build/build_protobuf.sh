@@ -110,16 +110,18 @@ fi
 
 # 编译主机 protoc
 if [[ -f "$HOST_PROTOC_BUILD_DIR/Makefile" ]]; then
+    # protobuf 3.21.12 的 configure 生成的 Makefile 没有 'protoc' 单独 target
+    # 所以必须用 `make`（无 target）来构建全部，包括 protoc
     run_command \
-        "make -j${PARALLEL_JOBS} protoc" \
+        "make -j${PARALLEL_JOBS}" \
         "${LOGS_DIR}/build/protobuf_${ARCH}_host_build.log" \
         "编译主机 protoc"
     # 查找编译后的 protoc（包括符号链接）
-    # 先检查直接路径
-    if [[ -x "$HOST_PROTOC_BUILD_DIR/protoc" ]]; then
-        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/protoc"
-    elif [[ -x "$HOST_PROTOC_BUILD_DIR/src/protoc" ]]; then
+    # configure 构建会在 src/ 下生成 protoc
+    if [[ -x "$HOST_PROTOC_BUILD_DIR/src/protoc" ]]; then
         HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/src/protoc"
+    elif [[ -x "$HOST_PROTOC_BUILD_DIR/protoc" ]]; then
+        HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/protoc"
     elif [[ -x "$HOST_PROTOC_BUILD_DIR/install/bin/protoc" ]]; then
         HOST_PROTOC="$HOST_PROTOC_BUILD_DIR/install/bin/protoc"
     else

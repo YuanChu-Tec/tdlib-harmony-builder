@@ -11,7 +11,7 @@
 
 #### ✅ 配置文件
 - `config.sh` - 主配置文件 ✓
-- `user_config.sh.example` - 配置模板 ✓
+- `user_config.sh.example` - (已废弃，由 builder.sh 配置菜单替代)
 - `builder.sh` - 主构建脚本 ✓
 
 #### ✅ 编译脚本
@@ -101,7 +101,7 @@
 
 ```
 tdlib-harmony-builder/
-├── ✅ 配置文件 (config.sh, user_config.sh.example)
+├── 配置文件 (config.sh, user_config.sh)
 ├── ✅ 构建脚本 (builder.sh, scripts/)
 ├── ✅ 编译脚本 (scripts/build/)
 ├── ✅ 补丁文件 (patches/)
@@ -170,7 +170,7 @@ tdlib-harmony-builder/
 
 1. **首次使用**:
    ```bash
-   ./scripts/init_config.sh
+   ./builder.sh - 主菜单选 5 (配置管理) → 配置后选 9 保存
    source config.sh && validate_config
    ./builder.sh --full
    ```

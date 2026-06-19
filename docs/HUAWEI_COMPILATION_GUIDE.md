@@ -282,7 +282,8 @@ ninja
 
 ```bash
 # 创建用户配置文件
-cp user_config.sh.example user_config.sh
+# 由 builder.sh 配置菜单自动生成
+./builder.sh  # 主菜单 → 5. 配置管理 → 配置后选 9 保存
 
 # 编辑配置文件，设置 HarmonyOS SDK 路径
 export OHOS_NDK="/path/to/harmony/ndk"

@@ -704,10 +704,347 @@ show_system_info() {
 }
 
 # ============================================
+# 首次运行检测
+# ============================================
+
+check_first_run() {
+    # 检测 NDK 是否配置
+    local need_config=false
+    
+    if [[ ! -f "${PROJECT_ROOT}/user_config.sh" ]]; then
+        # 可能是首次运行，检查 NDK
+        if [[ "$OHOS_NDK" == "${HOME}/harmony/ndk" ]] && [[ ! -d "$OHOS_NDK" ]]; then
+            need_config=true
+        fi
+    fi
+    
+    # 检测工具链目录是否存在
+    if [[ ! -d "$TOOLCHAIN_DIR" ]]; then
+        need_config=true
+    fi
+    
+    if [[ "$need_config" == "true" ]]; then
+        print_header
+        echo -e "${YELLOW}检测到首次运行或配置不完整${NC}"
+        echo ""
+        echo "将引导您完成基本配置..."
+        echo ""
+        read -p "按回车键开始配置..."
+        configure_ndk
+    fi
+}
+
+# ============================================
+# 配置管理
+# ============================================
+
+save_user_config() {
+    local config_file="${PROJECT_ROOT}/user_config.sh"
+    cat > "$config_file" << EOF
+#!/bin/bash
+# TDLib for HarmonyOS 用户配置
+# 由 builder.sh 配置菜单自动生成
+
+# HarmonyOS NDK 路径
+export OHOS_NDK="${CONFIGURED_NDK:-$OHOS_NDK}"
+
+# HarmonyOS API 级别
+export OHOS_API_LEVEL="${CONFIGURED_API:-$OHOS_API_LEVEL}"
+
+# 目标架构（以空格分隔）
+export ARCHITECTURES="${CONFIGURED_ARCH[*]}"
+
+# 版本配置
+export TDLIB_VERSION="${CONFIGURED_TDLIB_VERSION:-$TDLIB_VERSION}"
+export PROJECT_VERSION="${CONFIGURED_PROJECT_VERSION:-$PROJECT_VERSION}"
+
+# 构建模式 (Release/Debug/Profile)
+export BUILD_MODE="${CONFIGURED_MODE:-$BUILD_MODE}"
+
+# 并行任务数
+export PARALLEL_JOBS="${CONFIGURED_JOBS:-$PARALLEL_JOBS}"
+EOF
+    print_success "配置已保存到: $config_file"
+}
+
+configure_ndk() {
+    local current="${CONFIGURED_NDK:-$OHOS_NDK}"
+    echo ""
+    print_step "配置 HarmonyOS NDK 路径"
+    echo "  当前路径: $current"
+    echo "  常见路径:"
+    echo "    WSL/Linux: /home/username/ohos-sdk/linux/native"
+    echo "    Windows:   C:/Users/username/AppData/Local/OpenHarmony/Sdk/20/native"
+    echo "    macOS:     /Users/username/Library/OpenHarmony/Sdk/20/native"
+    echo ""
+    read -p "请输入 NDK 路径（回车跳过使用当前值）: " input
+    if [[ -n "$input" ]]; then
+        CONFIGURED_NDK="$input"
+    else
+        CONFIGURED_NDK="$current"
+    fi
+    
+    if [[ -d "${CONFIGURED_NDK}" ]]; then
+        print_success "NDK 路径有效: $CONFIGURED_NDK"
+    else
+        print_warning "路径不存在，将保存供后续设置（需手动确认路径正确）"
+    fi
+}
+
+configure_api() {
+    local current="${CONFIGURED_API:-$OHOS_API_LEVEL}"
+    echo ""
+    print_step "配置 HarmonyOS API 级别"
+    echo "  当前级别: $current"
+    echo "  常见值: 9 (Phone/Tablet), 12 (API 12), 23 (API 23)"
+    echo ""
+    read -p "请输入 API 级别（回车跳过使用当前值）: " input
+    if [[ -n "$input" ]] && [[ "$input" =~ ^[0-9]+$ ]]; then
+        CONFIGURED_API="$input"
+    else
+        CONFIGURED_API="$current"
+    fi
+    print_success "API 级别: $CONFIGURED_API"
+}
+
+configure_arch() {
+    echo ""
+    print_step "配置目标架构"
+    echo "  可用架构（多选用空格分隔）:"
+    echo "    1) arm64-v8a    (64位 ARM)"
+    echo "    2) armeabi-v7a  (32位 ARM)"
+    echo "    3) x86_64       (64位 x86)"
+    echo ""
+    local current="${CONFIGURED_ARCH[*]:-${ARCHITECTURES[*]}}"
+    echo "  当前选择: $current"
+    echo ""
+    read -p "请输入架构编号（如 1 2 3，回车跳过）: " input
+    if [[ -n "$input" ]]; then
+        local arch_map=(["1"]="arm64-v8a" ["2"]="armeabi-v7a" ["3"]="x86_64")
+        local selected=()
+        for num in $input; do
+            if [[ -n "${arch_map[$num]}" ]]; then
+                selected+=("${arch_map[$num]}")
+            fi
+        done
+        if [[ ${#selected[@]} -gt 0 ]]; then
+            CONFIGURED_ARCH=("${selected[@]}")
+            print_success "目标架构: ${CONFIGURED_ARCH[*]}"
+        else
+            print_error "无效选择，保持当前值"
+            CONFIGURED_ARCH=($current)
+        fi
+    else
+        CONFIGURED_ARCH=($current)
+    fi
+}
+
+configure_mode() {
+    local current="${CONFIGURED_MODE:-$BUILD_MODE}"
+    echo ""
+    print_step "配置构建模式"
+    echo "  1) Release  （发布模式，优化+去除调试信息）"
+    echo "  2) Debug    （调试模式，包含调试符号）"
+    echo "  3) Profile  （性能分析模式）"
+    echo ""
+    echo "  当前模式: $current"
+    echo ""
+    read -p "请输入模式编号 [1-3]（回车跳过）: " input
+    case "$input" in
+        1) CONFIGURED_MODE="Release" ;;
+        2) CONFIGURED_MODE="Debug" ;;
+        3) CONFIGURED_MODE="Profile" ;;
+        *) CONFIGURED_MODE="$current" ;;
+    esac
+    print_success "构建模式: $CONFIGURED_MODE"
+}
+
+configure_jobs() {
+    local current="${CONFIGURED_JOBS:-$PARALLEL_JOBS}"
+    echo ""
+    print_step "配置并行任务数"
+    echo "  当前数量: $current"
+    echo "  建议: CPU 核心数减 1（当前系统: $(nproc 2>/dev/null || echo 4) 核）"
+    echo ""
+    read -p "请输入并行数（回车跳过使用当前值）: " input
+    if [[ -n "$input" ]] && [[ "$input" =~ ^[0-9]+$ ]] && [[ "$input" -gt 0 ]]; then
+        CONFIGURED_JOBS="$input"
+    else
+        CONFIGURED_JOBS="$current"
+    fi
+    print_success "并行任务数: $CONFIGURED_JOBS"
+}
+
+configure_tdlib_version() {
+    local current="${CONFIGURED_TDLIB_VERSION:-$TDLIB_VERSION}"
+    echo ""
+    print_step "配置 TDLib 源码版本"
+    echo "  当前版本: $current"
+    echo "  说明: TDLib（Telegram 库）的实际版本号"
+    echo "  应与源码仓库版本匹配"
+    echo ""
+    read -p "请输入版本号（回车跳过使用当前值）: " input
+    if [[ -n "$input" ]]; then
+        CONFIGURED_TDLIB_VERSION="$input"
+    else
+        CONFIGURED_TDLIB_VERSION="$current"
+    fi
+    print_success "TDLib 源码版本: $CONFIGURED_TDLIB_VERSION"
+}
+
+configure_project_version() {
+    local current="${CONFIGURED_PROJECT_VERSION:-$PROJECT_VERSION}"
+    echo ""
+    print_step "配置 HarmonyOS 适配版本"
+    echo "  当前版本: $current"
+    echo "  说明: 打包版本号，含 HarmonyOS 适配标记"
+    echo "  例如: 1.8.65-harmonyos"
+    echo ""
+    read -p "请输入版本号（回车跳过使用当前值）: " input
+    if [[ -n "$input" ]]; then
+        CONFIGURED_PROJECT_VERSION="$input"
+    else
+        CONFIGURED_PROJECT_VERSION="$current"
+    fi
+    print_success "HarmonyOS 适配版本: $CONFIGURED_PROJECT_VERSION"
+}
+
+show_config_view() {
+    print_header
+    echo -e "${BOLD}当前配置:${NC}"
+    echo ""
+    echo -e "${CYAN}路径配置:${NC}"
+    echo "  NDK 路径:  ${CONFIGURED_NDK:-$OHOS_NDK}"
+    echo "  SDK 路径:  $OHOS_SDK"
+    echo "  API 级别:  ${CONFIGURED_API:-$OHOS_API_LEVEL}"
+    echo ""
+    echo -e "${CYAN}版本配置:${NC}"
+    echo "  TDLib 源码版本:   ${CONFIGURED_TDLIB_VERSION:-$TDLIB_VERSION}"
+    echo "  HarmonyOS 适配版本: ${CONFIGURED_PROJECT_VERSION:-$PROJECT_VERSION}"
+    echo ""
+    echo -e "${CYAN}构建配置:${NC}"
+    echo "  目标架构:  ${CONFIGURED_ARCH[*]:-${ARCHITECTURES[*]}}"
+    echo "  构建模式:  ${CONFIGURED_MODE:-$BUILD_MODE}"
+    echo "  并行任务:  ${CONFIGURED_JOBS:-$PARALLEL_JOBS}"
+    echo ""
+    echo -e "${CYAN}配置文件:${NC}"
+    if [[ -f "${PROJECT_ROOT}/user_config.sh" ]]; then
+        echo "  user_config.sh: 存在 (用户覆盖配置)"
+    else
+        echo "  user_config.sh: 不存在 (使用 config.sh 默认值)"
+    fi
+    echo "  config.sh:    存在于项目根目录 (通用配置)"
+    echo ""
+    echo -e "${CYAN}工具链:${NC}"
+    if [[ -d "$TOOLCHAIN_DIR" ]]; then
+        echo "  工具链: ✅ 有效 ($TOOLCHAIN_DIR)"
+    else
+        echo -e "  工具链: ${RED}❌ 无效${NC} ($TOOLCHAIN_DIR)"
+    fi
+    if [[ -f "${PROJECT_ROOT}/user_config.sh" ]]; then
+        echo ""
+        echo "=============================="
+        echo "user_config.sh 内容:"
+        cat "${PROJECT_ROOT}/user_config.sh"
+    fi
+}
+
+show_config_menu() {
+    while true; do
+        clear
+        print_header
+        echo "配置管理 - 请选择:"
+        echo ""
+        echo -e "${CYAN}路径配置:${NC}"
+        echo -e "  ${GREEN}1.${NC} 设置 NDK 路径"
+        echo -e "  ${GREEN}2.${NC} 设置 API 级别"
+        echo ""
+        echo -e "${CYAN}版本配置:${NC}"
+        echo -e "  ${GREEN}3.${NC} 设置 TDLib 源码版本"
+        echo -e "  ${GREEN}4.${NC} 设置 HarmonyOS 适配版本"
+        echo ""
+        echo -e "${CYAN}构建配置:${NC}"
+        echo -e "  ${GREEN}5.${NC} 设置目标架构"
+        echo -e "  ${GREEN}6.${NC} 设置构建模式"
+        echo -e "  ${GREEN}7.${NC} 设置并行任务数"
+        echo ""
+        echo -e "  ${GREEN}8.${NC} 查看当前配置"
+        echo -e "  ${GREEN}9.${NC} 保存配置并退出"
+        echo -e "  ${GREEN}0.${NC} 返回主菜单（不保存）"
+        echo ""
+        
+        # 加载已保存的配置到 CONFIGURED_* 变量（如果存在）
+        if [[ -f "${PROJECT_ROOT}/user_config.sh" ]] && [[ -z "${CONFIGURED_NDK:-}" ]]; then
+            source "${PROJECT_ROOT}/user_config.sh"
+            CONFIGURED_NDK="$OHOS_NDK"
+            CONFIGURED_API="$OHOS_API_LEVEL"
+            CONFIGURED_TDLIB_VERSION="$TDLIB_VERSION"
+            CONFIGURED_PROJECT_VERSION="$PROJECT_VERSION"
+            CONFIGURED_ARCH=("${ARCHITECTURES[@]}")
+            CONFIGURED_MODE="$BUILD_MODE"
+            CONFIGURED_JOBS="$PARALLEL_JOBS"
+        fi
+        
+        read -p "请输入选项 [0-9]: " choice
+        echo ""
+        
+        case $choice in
+            1)
+                configure_ndk
+                read -p "按回车键继续..."
+                ;;
+            2)
+                configure_api
+                read -p "按回车键继续..."
+                ;;
+            3)
+                configure_tdlib_version
+                read -p "按回车键继续..."
+                ;;
+            4)
+                configure_project_version
+                read -p "按回车键继续..."
+                ;;
+            5)
+                configure_arch
+                read -p "按回车键继续..."
+                ;;
+            6)
+                configure_mode
+                read -p "按回车键继续..."
+                ;;
+            7)
+                configure_jobs
+                read -p "按回车键继续..."
+                ;;
+            8)
+                show_config_view
+                read -p "按回车键继续..."
+                ;;
+            9)
+                save_user_config
+                read -p "按回车键返回主菜单..."
+                return
+                ;;
+            0)
+                return
+                ;;
+            *)
+                print_error "无效的选项"
+                sleep 2
+                ;;
+        esac
+    done
+}
+
+# ============================================
 # 交互式菜单
 # ============================================
 
 show_menu() {
+    # 首次运行检测
+    check_first_run
+    
     while true; do
         clear
         print_header
@@ -718,10 +1055,11 @@ show_menu() {
         echo -e "  ${GREEN}2.${NC} 清理操作"
         echo -e "  ${GREEN}3.${NC} 测试操作"
         echo -e "  ${GREEN}4.${NC} 系统信息"
+        echo -e "  ${GREEN}5.${NC} 配置管理"
         echo -e "  ${GREEN}0.${NC} 退出"
         echo ""
         
-        read -p "请输入选项 [0-4]: " choice
+        read -p "请输入选项 [0-5]: " choice
         echo ""
         
         case $choice in
@@ -737,6 +1075,9 @@ show_menu() {
             4)
                 show_system_info
                 read -p "按回车键返回主菜单..."
+                ;;
+            5)
+                show_config_menu
                 ;;
             0)
                 echo "再见！"
@@ -768,16 +1109,17 @@ show_build_menu() {
         echo -e "${CYAN}分步执行（所有架构）:${NC}"
         echo -e "  ${GREEN}3.${NC} 仅解压源码"
         echo -e "  ${GREEN}4.${NC} 仅编译（使用现有源码）"
-        echo -e "  ${GREEN}5.${NC} 仅打包已编译的库"
+        echo -e "  ${GREEN}5.${NC} 编译并打包（所有架构）"
+        echo -e "  ${GREEN}6.${NC} 仅打包已编译的库"
         echo ""
         echo -e "${CYAN}分步执行（单个架构）:${NC}"
-        echo -e "  ${GREEN}6.${NC} 仅编译单个架构"
-        echo -e "  ${GREEN}7.${NC} 仅打包单个架构"
+        echo -e "  ${GREEN}7.${NC} 仅编译单个架构"
+        echo -e "  ${GREEN}8.${NC} 仅打包单个架构"
         echo ""
         echo -e "  ${GREEN}0.${NC} 返回主菜单"
         echo ""
         
-        read -p "请输入选项 [0-7]: " choice
+        read -p "请输入选项 [0-8]: " choice
         echo ""
         
         case $choice in
@@ -814,16 +1156,21 @@ show_build_menu() {
                 return
                 ;;
             5)
-                package_distribution
+                build_only && package_distribution
                 read -p "按回车键返回..."
                 return
                 ;;
             6)
-                build_single_arch_only
+                package_distribution
                 read -p "按回车键返回..."
                 return
                 ;;
             7)
+                build_single_arch_only
+                read -p "按回车键返回..."
+                return
+                ;;
+            8)
                 package_single_arch
                 read -p "按回车键返回..."
                 return
@@ -1008,6 +1355,7 @@ show_help() {
     echo "分步执行（所有架构）:"
     echo "  --extract         仅解压源码"
     echo "  --build           仅编译现有源码（所有架构）"
+    echo "  --build-package   编译并打包（所有架构）"
     echo "  --package         仅打包已编译的库（所有架构）"
     echo ""
     echo "分步执行（单个架构）:"
@@ -1064,6 +1412,10 @@ if [[ $# -gt 0 ]]; then
             ;;
         --build)
             build_only
+            exit $?
+            ;;
+        --build-package)
+            build_only && package_distribution
             exit $?
             ;;
         --package)
