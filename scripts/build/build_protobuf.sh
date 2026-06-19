@@ -190,31 +190,14 @@ if [[ -z "$TOOLCHAIN_FILE" ]]; then
 fi
 
 # 配置 CMake
-# 注意：Protobuf 33.4+ 依赖 Abseil，需要确保 Abseil 被正确构建和安装
+# Protobuf 3.21.12 使用 C++14，不需要 Abseil 依赖
 # 添加 -D_POSIX_C_SOURCE 以启用 POSIX 函数（如 close）
 # 
 # 注意：不要主动覆盖优化级别，由 CMake Release 模式自动使用 -O3
-# 之前尝试 -O0/-O1/-Og 反而触发 clang 15.0.4 解析器崩溃
-# 不要添加 -fno-exceptions 或 -fno-rtti，protobuf 35.x 依赖异常和 RTTI
+# 不要添加 -fno-exceptions 或 -fno-rtti
 PROTOBUF_C_FLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS"
-PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS -std=c++17 -Wno-unused-command-line-argument"
+PROTOBUF_CXX_FLAGS="$CXXFLAGS -D_POSIX_C_SOURCE=200809L -DOHOS -std=c++14 -Wno-unused-command-line-argument"
 
-# 自动检测 Abseil 安装路径（直接传递 -Dabsl_DIR，避免中间变量引号被 eval 吞掉）
-ABSL_CMAKE_DIR=""
-if [[ -d "$ARCH_INSTALL_DIR/lib/cmake/absl" ]]; then
-    ABSL_CMAKE_DIR="$ARCH_INSTALL_DIR/lib/cmake/absl"
-elif [[ -d "$ARCH_INSTALL_DIR/share/cmake/absl" ]]; then
-    ABSL_CMAKE_DIR="$ARCH_INSTALL_DIR/share/cmake/absl"
-fi
-if [[ -n "$ABSL_CMAKE_DIR" ]]; then
-    log_info "检测到 Abseil: $ABSL_CMAKE_DIR"
-else
-    log_warning "未检测到 Abseil 安装，protobuf 35.x 需要 Abseil 依赖"
-    log_warning "请先编译安装 Abseil"
-fi
-
-# 注意：protobuf 35.x 已不识别 protobuf_ABSL_PROVIDER，
-# 直接通过 -Dabsl_DIR 指定路径即可
 run_command \
     "\"$CMAKE_CMD\" \"$SOURCE_DIR\" \
         -G \"Ninja\" \
@@ -227,7 +210,6 @@ run_command \
         -Dprotobuf_BUILD_TESTS=OFF \
         -Dprotobuf_BUILD_EXAMPLES=OFF \
         -Dprotobuf_INSTALL=ON \
-        -Dabsl_DIR=\"${ABSL_CMAKE_DIR}\" \
         -DZLIB_ROOT=\"$ARCH_INSTALL_DIR\" \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_C_COMPILER=\"$CC\" \
